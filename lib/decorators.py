@@ -1,7 +1,7 @@
 #many taken from http://wiki.python.org/moin/PythonDecoratorLibrary
 
 import sys
-
+from lib import logger
 #classes these are used on must inherit object or a sub class of object...
 
 def propget(func):
@@ -102,6 +102,7 @@ def unchanged(func):
 def disabled(func):
     "This decorator disables the provided function, and does nothing"
     def empty_func(*args,**kargs):
+        logger.WARN('disabled function called, enable debug data tracking to find where')
         pass
     return empty_func
 
