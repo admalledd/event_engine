@@ -24,7 +24,7 @@ def p_rents(lo):
     '''
     a function to log where a function got called from
     should never be called in production code _EVER_
-    so: variable to set if we disable this...
+    so: decorator to set if we disable this...
     '''
     import inspect ##because this fuinction should only be called during debug, i dont mind about the 'lag' here
     buf=[]
@@ -50,7 +50,7 @@ def p_rents(lo):
         buf.append("%s:%s:%s:%s()"%(filename,lineno,cls,func))
         
     path=" >> ".join(buf)
-    ##finaly, use logging instance to log thins thing for us, saving it to file, printing to terminal and whatnot
+    ##finaly, use logging instance to log this thing for us, saving it to file, printing to terminal and whatnot
     lo.debug('call stack: %s'%path)
     
 _debug = 0
