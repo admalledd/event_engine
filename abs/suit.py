@@ -26,17 +26,14 @@ try:
 except ImportError:
     from StringIO import StringIO as sio
 import traceback    
+import sys
 
 #local
 import lib.cfg
 
 
 
-su_dict={}
-su_server=SocketServer.ThreadingTCPServer()###give host/port from lib.cfg.suit
-su_server.daemon_threads = True
-su_server_thread = threading.Thread(target=su_server.serve_forever)
-su_server_thread.setDaemon(True)
+
 
 #what the suit gives when it sends data, a 4 byte type, right now, request, response and status update only.
 SRESPONSE = 'resp'
@@ -68,7 +65,7 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         
         try:
             self.setup()
-            self.handle()
+            #self.handle()
             self.finish()
         except Exception as e:
             self.finnish_ex(e)
@@ -82,7 +79,7 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         '''
         self.inq = Queue.Queue(10) #read from suit
         self.outq= Queue.Queue(10) #headed to suit
-        logger.info('handling new suit connection from %s'%(self.client_address))
+        logger.info('handling new suit connection from %s'%(self.client_address,))
         self.request.settimeout(0.5)
         self.getSID()
         logger.info('suit %s connected'%self.SID)
@@ -103,13 +100,7 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         
         TODO:this sucks at large data, probably a good idea to find some way to limmit it...
         '''
-        try:
-            header = self.request.recv(8, socket.MSG_DONTWAIT)
-        except socket.error, e:
-            if e[0] != 11:
-                raise
-            #we did no yet recv our header? but it should be here! GAH!!
-            raise Exception('header not recieved, was the socket really ready?')
+        header = self.request.recv(8)
         content_len = int(header[:4])
         ##type is 'resp' or 'rqst' or 'stat'
         type = header[4:]
@@ -133,18 +124,18 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         
         #block waiting for the response, but block nicly using select
         inputready,outputready,exceptionready = select.select([self.request],[],[])
-            for streamobj in inputready:
-                if streamobj == self.request:
-                    tpye = None
-                    while True:
-                        type,data = self.read()
-                        if type == SRESPONSE:
-                            #data now holds sub-header of 4 bytes again.
-                            if data[:4] == 'rsid':
-                                #now that our data is here, and it was from this request, parse!
-                                #simple expresion here btw
-                                self.SID = sum([ord(i) for i in data[4:6]])
-                                return
+        for streamobj in inputready:
+            if streamobj == self.request:
+                tpye = None
+                while True:
+                    type,data = self.read()
+                    if type == SRESPONSE:
+                        #data now holds sub-header of 4 bytes again.
+                        if data[:4] == 'rsid':
+                            #now that our data is here, and it was from this request, parse!
+                            #simple expresion here btw
+                            self.SID = sum([ord(i) for i in data[4:6]])
+                            return
     def finnish(self):
         logger.warn('suit %s requested connection closed.'%self.SID)
     def finnish_ex(self,ex):
@@ -157,4 +148,9 @@ def init():
     '''start su_server thread, and watch thing-a-ma-jigs'''
     su_server_thread.start()
 
+su_dict={}
 
+su_server=SocketServer.ThreadingTCPServer((lib.cfg.abs['su_server']['host'],lib.cfg.abs['su_server'].as_int('port')), suit_con_handler)
+su_server.daemon_threads = True
+su_server_thread = threading.Thread(target=su_server.serve_forever)
+su_server_thread.setDaemon(True)

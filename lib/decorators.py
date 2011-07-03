@@ -1,7 +1,6 @@
 #many taken from http://wiki.python.org/moin/PythonDecoratorLibrary
 
 import sys
-from lib import logger
 #classes these are used on must inherit object or a sub class of object...
 
 def propget(func):
