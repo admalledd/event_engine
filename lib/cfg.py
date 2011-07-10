@@ -4,6 +4,6 @@ from lib import logger
 
 import os
 
-abs = cj.ConfigObj(os.path.join(lib.common.curdir,'abs','config.ini'))
+abs = cj.ConfigObj(os.path.join(lib.common.curdir,'abs','cfg','config.ini'))
 logger.debug('server config opened and loaded')
 

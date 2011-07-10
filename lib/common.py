@@ -16,7 +16,7 @@ from lib.decorators import disabled,enabled
 import lib
 
 LOGFILENAME='lazertag.log'
-datadir = 'data'
+datadir = 'lib'
 
 
 @enabled
