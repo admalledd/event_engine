@@ -16,6 +16,7 @@ suits:: a dictionary of {SID:suit_con_handler}
 import logging
 logger = logging.getLogger('abs.suit')
 
+from . import server
 
 
 suits={}
@@ -40,6 +41,7 @@ class suit(object):
 
 def init():
     '''start su_server thread, and watch thing-a-ma-jigs'''
-    su_server_thread.start()
+    server.su_server_thread.start()
+    logger.info('abs.suit server started')
 
 

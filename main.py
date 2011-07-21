@@ -4,6 +4,8 @@ import time
 import random
 
 import lib
+import lib.common
+lib.common.init()
 import abs.suit
 
 l={'l':[]}

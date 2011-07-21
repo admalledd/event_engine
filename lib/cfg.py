@@ -4,6 +4,8 @@ from lib import logger
 
 import os
 
-abs = cj.ConfigObj(os.path.join(lib.common.curdir,'abs','cfg','config.ini'))
+server = cj.ConfigObj(os.path.join(lib.common.curdir,'config.ini'))
 logger.debug('server config opened and loaded')
 
+abs_suit = cj.ConfigObj(os.path.join(lib.common.curdir,'abs','cfg','suit.ini'))
+logger.debug('abs.suit config opened and loaded')
