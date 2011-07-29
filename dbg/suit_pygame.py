@@ -7,14 +7,7 @@ def main():
     HOST, PORT = "localhost", 1986
     
     def send(type,dat):
-        content_len = str(len(dat))
-        if len(content_len) >4:
-            print '\n**ERROR too long of mesg\n**'
-        while len(content_len) <4:
-            content_len='0'+content_len
-        s=content_len+type+dat
-        print s
-        sock.send(s)
+        
     # Create a socket (SOCK_STREAM means a TCP socket)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -27,5 +20,17 @@ def main():
         print "SID %s sent"%SID
 
     sock.close()
-
-main()
+def pack_fmt(data):
+    '''data is a dictionary with 'type' and 'data' values'''
+    
+    #first we calculate content_len
+    content_len = str(len(data['data']))
+    if len(content_len) >4:
+        print '\n**ERROR too long of mesg\n**'
+    while len(content_len) <4:
+        content_len='0'+content_len
+    s=content_len+type+dat
+    print s
+    return s
+#main()
+pack_fmt({ 'type':'ss','data':'sid:%d'%(SID) })

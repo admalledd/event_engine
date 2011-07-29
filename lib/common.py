@@ -84,11 +84,9 @@ if os.path.exists(os.path.normpath(os.path.realpath(os.path.join(os.getcwd(),dat
 elif os.path.exists(os.path.normpath(os.path.realpath(os.path.join(os.getcwd(),'..',datadir)))):
     curdir = os.path.normpath(os.path.realpath(os.path.join(os.getcwd(),'..')))
     print "changing tmp_path to::" , curdir
-    #os.chdir(curdir)
 #we have a problem... try loading from where this file is (hopefully...)
 else:
-    print 'could not find data folder manually, trying dynamically...'   
-    #got rid of the inspect method of finding the file, seems that __file__ will work just as well.
+    print 'could not find data folder manually, trying dynamically...'
     curdir = os.path.dirname(os.path.abspath(__file__))
     if os.path.exists(os.path.normpath(os.path.realpath(os.path.join(curdir,'..',datadir)))):
         curdir = os.path.normpath(os.path.realpath(os.path.join(curdir,'..')))
@@ -97,10 +95,11 @@ else:
         raise SystemExit
     print 'changing tmp_path to::' , curdir
 
-
-
-def init(LOGFILENAME='lazertag.log'):
-    log_name=os.path.join(curdir,LOGFILENAME)
+#import here because this is after curdir is set
+import lib.cfg
+def init(LOGFILENAME=None):
+    if LOGFILENAME==None:
+        log_name=os.path.join(curdir,lib.cfg.main['log_settings']['filename'])
     # set up logging to file - see previous section for more details
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',

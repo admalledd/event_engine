@@ -11,36 +11,27 @@ this means that when a suit looses its link, and then reconnects, both remember 
 
 data def's:::
 
-suits:: a dictionary of {SID:suit_con_handler}
+suits:: a dictionary of {SID:suit_obj}
 '''
+#std lib
 import logging
 logger = logging.getLogger('abs.suit')
 
+#server libs
+import lib.cfg
+
+#abs layer
 from . import server
 
+#copy of server.suits so that other things can look at it without knowing the nitty-gritty
+suits=server.suits
 
-suits={}
 
-
-
-class suit(object):
-    '''
-    sid == suit identification descriptor, each suit is unique.
-    '''
-    def __init__(self,sid):
-        self.sid=sid
-        
-    def _read_sock(self):
-        if self.sid in suits:
-            if not suits[self.sid].outq.empty():
-                #data to get and read/parse
-                logger.info(suits[self.sid].outq.get())
-        else:
-            logger.warn('suit %s read requested, but suit not connected')
 
 
 def init():
     '''start su_server thread, and watch thing-a-ma-jigs'''
+    server.init()
     server.su_server_thread.start()
     logger.info('abs.suit server started')
 
