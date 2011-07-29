@@ -59,6 +59,7 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         
         queue's are in self.qu{first_tpye:queue}
         '''
+        self.SID=None
         self.inq = Queue.Queue(10) #read from suit
         self.outq= Queue.Queue(10) #headed to suit
         logger.info('handling new suit connection from %s'%(self.client_address,))
@@ -87,14 +88,18 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
     def handle(self):
         '''here we wait forever waiting for data. once it arrives, send control to self.read(), and pass data to self.parse_put()'''
         while True:
-            handle_one()
+            self.handle_one()
+            
+            
     def handle_one(self):
         '''handle one data packet from suit to server'''
         readready,writeready,exceptionready = select.select([self.request],[],[])
         for streamobj in readready:
             if streamobj == self.request:
                 #we have new data to read from suit, read it and pass to self.parse_put()
-                self.parse_put(self.read())
+                type,data=self.read()
+                self.parse_put(type,data)
+                    
                     
     def parse_put(self,type,data):
         '''parse the header packet and put the data into the queue it belongs in.
@@ -119,8 +124,6 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         
         #x is used for filler of packet. packet headers are in multiples of 4-bytes
         
-        
-        
         '''
         ##todo::: add to stack for reliability the logging of all data in
         
@@ -139,6 +142,8 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
             packet=self.make_packet(type,data)
             ##todo::: add to stack for reliability the logging of all data out
             self.request.sendall(packet)
+            
+            
     def make_packet(self,type,data):
         content_len = str(len(data))
         if len(content_len) > 4:
@@ -148,7 +153,7 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         if len(type) !=4:
             raise Error('type must be 4 bytes long')
         
-        pak=''.join(content_len,type,data)
+        pak=''.join((content_len,type,data))
         return pak
         
         
@@ -206,17 +211,20 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         self.inq.put(('rqid','sidx'))#send get SID request
         
         #block waiting for the response, but block nicly using select
-        self.SID=None
+        
         while self.SID is None:
             self.handle_one()
+            
+            
     def finnish(self):
         logger.warn('suit %s requested connection closed.'%self.SID)
-        del suits[self.SID]
         
         
     def finnish_ex(self):
         buff=sio()
         traceback.print_exc(file=buff)
+        if self.SID is not None:
+            buff.write('SUIT ID: %s\n'%self.SID)
         logger.error('suit communication error! %s'%buff.getvalue())
         buff.close()
         del buff#stupid GC hates me
