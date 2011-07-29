@@ -3,13 +3,13 @@ import sys
 import threading
 import select
 import Queue
-
+import random
 
 import pygame
 pygame.init()
 from pygame.locals import *
 
-HOST, PORT = "localhost", 1986
+HOST, PORT = "localhost", 1987
 SID = 127
 
 class con(object):
@@ -61,6 +61,7 @@ class con(object):
             raise Error('type must be 4 bytes long')
         
         pak=''.join((content_len,type,data))
+        print pak
         return pak
         
         
@@ -105,6 +106,7 @@ def main():
                 return None
             elif event.type == MOUSEBUTTONDOWN and event.button==1:
                 print 'click'
+                suit.inq.put(('ssxx','{test:%s}'%random.randint(0,100)))
         screen.fill((0, 0, 0))
         screen.blit(text, text.get_rect())
         pygame.display.flip()

@@ -77,11 +77,10 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         
         if self.SID in suits:
             logger.warn('new connection for %s is already connected, overwritting old with new'%self.SID)
-            suits[self.SID].wr_suit_con=weakref.ref(self)
+            suits[self.SID].wr=weakref.ref(self)
         else:
             logger.info('new suit object being created for %s'%self.SID)
-            s=suit.suit(self.SID)
-            s.wr_suit_con=weakref.ref(self)
+            s=suit.suit(self.SID,weakref.ref(self))
             suits[self.SID]=s
             
             
@@ -132,6 +131,9 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
             if data[:4] == 'sidx':#data packed is a SID id packet (not a team packet or suit name packet)
                 self.SID=int(data[4:])#get our SID
                 return #because we already took care of this, dont add to output, but not all needs to be blocked from output
+        if lib.common.debug() >4:
+            #high debug level, print raw packets
+            logger.debug((type,data))
         self.outq.put((type,data))
         
         
