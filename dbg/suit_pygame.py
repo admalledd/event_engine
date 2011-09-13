@@ -106,7 +106,7 @@ def main():
                 return None
             elif event.type == MOUSEBUTTONDOWN and event.button==1:
                 print 'click'
-                suit.inq.put(('ssxx','{test:%s}'%random.randint(0,100)))
+                suit.inq.put(('ssxx','{shot:%s,%s,%s,%s}'%('wep','teamblu','97',SID)))
         screen.fill((0, 0, 0))
         screen.blit(text, text.get_rect())
         pygame.display.flip()
