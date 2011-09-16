@@ -78,6 +78,7 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         if self.SID in suits:
             logger.warn('new connection for %s is already connected, overwritting old with new'%self.SID)
             suits[self.SID].wr=weakref.ref(self)
+            suits[self.SID].kill_dispatcher()
             suits[self.SID].dispatcher_t.start()
         else:
             logger.info('new suit object being created for %s'%self.SID)
