@@ -21,18 +21,16 @@ logger = logging.getLogger('abs.suit')
 import lib.cfg
 
 #abs layer
-from . import server
+from . import network
 
-#copy of server.suits so that other things can look at it without knowing the nitty-gritty
-suits=server.suits
 
 
 
 
 def init():
     '''start su_server thread, and watch thing-a-ma-jigs'''
-    server.init()
-    server.su_server_thread.start()
+    network.init()
+    network.su_server_thread.start()
     logger.info('abs.suit server started')
 
 

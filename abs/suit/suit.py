@@ -2,9 +2,13 @@ import logging
 logger = logging.getLogger('abs.suit.suit')
 import threading
 import time
+import json
+
 
 import lib.common
 import lib.cfg
+
+suits={}#format: {SID:[suitobj,netobj]}
 
 class suit(object):
     '''
@@ -12,34 +16,47 @@ class suit(object):
     
     self.wr == weakref to the suit connection handler, allows for it to die, but must be careful to check its life each time...
     '''
-    def __init__(self,sid,weakref):
-        self.sid=sid
-        self.wr=weakref#updated via abs.suit.server upon new connection
-        
-        self.dispatcher_t=threading.Thread(target=self.dispatcher)
-        self.dispatcher_t.setDaemon(True)
-        self.dispatcher_t.start()
-        self.dispatcher_running=True
-        
-        self.status={}
-    def dispatcher(self):
+    def __init__(self,sid):
+        self.SID=sid
+        self.translation_codes={\
+        'ghit':self.got_hit,                #got hit from another suit
+        'stup':self.status_update,          #status update, normaly a position update, or a health update from a preveious got_hit()
+        'ping':self.ping,                   #just a simple ping to keep the lines open, data is reported back, and logger.debug()'d
+        'pong':self.pong                   #simmilar to above, but no reply needed, only log data
+        }
+        self.status={#json-able data structure with all relavent suit data
+        'health':100,
+        'ammos':[100],
+        'weapon':0,#weapon is the index for weapons and ammo
+        'weapons':['basic'],
+        'location':[0,0],
+        'team':'red',
+        'player_name':'john_doe'
+        }
+    def run_packet(self,short_func,data):
         '''it is up to this function to decide what function gets called for what
         (got_hit(self.sid,self,other), player_move(self.sid,self,old_loc,new_loc) ect....
         '''
-        self.__diswatcher=True
-        while self.dispatcher_running:
-            if self.wr() is None:
-                self.dispatcher_running=False
-                break#its the end, our weakref is dead. stop doing things in the active loop
-            type,data = self.wr().outq.get()
-            if lib.common.debug() >4:
-                #high debug
-                logger.debug((type,data))
-        self.__diswatcher=false
         
-    def kill_dispatcher(self,force=False):
+        if lib.common.debug() >4:
+            #high debug
+            logger.debug((short_func,data))
         
-        self.dispatcher_running=False
-        while self.__diswatcher:
-            time.sleep(0.02)
-        return 
+        self.translation_codes[short_func](data)
+        
+    def ping(self,data):
+        if 'pingdata' in data:
+            logger.info('suit %s pinged with data: %s'%(self.SID,data))
+        return_data=json.dumps(data)
+        suits[self.SID][1].outgoingq.put(('pong',return_data))
+    
+    def pong(self, data):
+        if 'pingdata' in data:
+            logger.info('suit %s pinged with data: %s'%(self.SID,data))
+    
+    def status_update(self,data):
+        self.status.update(data)
+        
+    def got_hit(self,data):
+        #in the future, load weapon from weapons in the arena
+        logger.info('suit %s got hit with weapon "%s"'%(self.SID,data['weapon']))

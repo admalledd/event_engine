@@ -4,6 +4,8 @@ import threading
 import select
 import Queue
 import random
+import json
+import struct
 
 import pygame
 pygame.init()
@@ -17,13 +19,16 @@ class con(object):
         
         # Create a socket (SOCK_STREAM means a TCP socket)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+        self.sock.setblocking(1)
         # Connect to server and send data
         self.sock.connect((HOST, PORT))
+        #send SuitSoftware version, first thing, size 16
+        self.sock.send('lzr debug pygame')
+        #send SID next
+        self.sock.send(struct.pack('q',SID))
         
-        self.inq = Queue.Queue(10) #read from server
-        self.outq= Queue.Queue(10) #headed to server
-        
+        self.incomingq = Queue.Queue(10) #read from sserver
+        self.outgoingq= Queue.Queue(10) #headed to server
         
         self.w_thread = threading.Thread(target=self.write)
         self.w_thread.setDaemon(True)
@@ -31,67 +36,60 @@ class con(object):
         self.r_thread = threading.Thread(target=self.handle)
         self.r_thread.setDaemon(True)
         self.r_thread.start()
-    def parse_put(self,type,data):
-        if type=='rqid':
-            if data[:4] == 'sidx':
-                self.inq.put(('srid','sidx%s'%SID))
-                return #because we already took care of this, dont add to output, but not all needs to be blocked from output
-        self.outq.put((type,data))
         
         
     def handle(self):
-        '''here we wait forever waiting for data. once it arrives, send control to self.read(), and pass data to self.parse_put()'''
         while True:
-            self.handle_one()
-    def handle_one(self):
-        '''handle one data packet from suit to server'''
-        readready,writeready,exceptionready = select.select([self.sock],[],[])
-        for streamobj in readready:
-            if streamobj == self.sock:
-                #we have new data to read from suit, read it and pass to self.parse_put()
-                type,data=self.read()
-                self.parse_put(type,data)
-    def make_packet(self,type,data):
-        content_len = str(len(data))
-        if len(content_len) > 4:
-            raise Error('data packet too large for protocall')
-        while len(content_len) <4:
-            content_len='0'+content_len
-        if len(type) !=4:
-            raise Error('type must be 4 bytes long')
+            header = self.sock.recv(8)
+            print repr(header)
+            content_len = struct.unpack('I',header[:4])[0]
+            #see description above for header layout
+            short_func = header[4:]
+            for ch in short_func:
+                if ch not in string.ascii_letters:
+                    raise Exception('received bad call function, must be ascii_letters. got:"%s"'%short_func)
+            ##read data in 1024 byte chunks, but once under, use actual size
+            if content_len >1024:
+                tcon = content_len
+                data = []
+                while tcon > 1024:
+                    data.append(self.sock.recv(1024))
+                    tcon = tcon-1024
+                data.append(self.sock.recv(tcon))
+                data = ''.join(data)
+            else:
+                data = self.sock.recv(content_len)
         
-        pak=''.join((content_len,type,data))
-        print pak
-        return pak
+            data=json.loads(data)
         
-        
-    def read(self):
-        header = self.sock.recv(8)
-        content_len = int(header[:4])
-        #see description above for header layout
-        type = header[4:]
-        ##read data in 1024 byte chunks, but once under, use actual size
-        if content_len >1024:
-            tcon = content_len
-            data = []
-            while tcon > 1024:
-                data.append(self.sock.recv(1024))
-                tcon = tcon-1024
-            data.append(self.sock.recv(tcon))
-            data = ''.join(data)
-        else:
-            data = self.sock.recv(content_len)
-        return type,data
-        
+    def make_packet(self,action,data):
+        '''
+        this function is broken out so others beyond the writer can use it
+        packet def:
+            '####xxxx'
+            4 chars of number, being packet size packed using struct.pack('I',####)
+            4 chars of ASCII letters, to either:
+                if from suit: to translate into function names (eg: 'ghit'==def got_hit(self,weapon)...)
+                    here data would be the json object representing the weapon
+                if from server: action name for suit to do (eg, 'chst'==changestats)
+                    here data would be something like: {'health':('-',5)} #loose five health
+        '''
+        if len(action) !=4:
+            raise Exception('action must be 4 chars.')
+        if not isinstance(data, basestring):
+            data = json.dumps(data)
+        header=struct.pack('I',len(data))+action
+        print header+data
+        return header+data
         
     def write(self):
-        '''write same protocall as the read, but now we use it for output'''
+        '''eats things from the outgoing queue.
+        format of outgoing data: tuple(action,jsonabledata)'''
         while True:
-            type,data=self.inq.get()
-            packet=self.make_packet(type,data)
+            short_func,data=self.outgoingq.get()
+            packet=self.make_packet(short_func,data)
             ##todo::: add to stack for reliability the logging of all data out
             self.sock.sendall(packet)
-            
             
 def main():
     screen = pygame.display.set_mode((640, 480))
@@ -106,7 +104,7 @@ def main():
                 return None
             elif event.type == MOUSEBUTTONDOWN and event.button==1:
                 print 'click'
-                suit.inq.put(('ssxx','{shot:%s,%s,%s,%s}'%('wep','teamblu','97',SID)))
+                suit.outgoingq.put(('ghit',json.dumps({'weapon':'basic','team':'teamblu','from':7589})))
         screen.fill((0, 0, 0))
         screen.blit(text, text.get_rect())
         pygame.display.flip()
