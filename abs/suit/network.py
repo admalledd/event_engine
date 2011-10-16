@@ -2,8 +2,7 @@ import logging
 logger = logging.getLogger('abs.suit.server')
 
 import SocketServer
-import socket
-import threading
+from lib import thread2 as threading
 import select
 import Queue
 try: 
@@ -12,16 +11,16 @@ except ImportError:
     from StringIO import StringIO as sio
 import traceback    
 import sys
-import weakref
 import struct
 import string
 import json
+import time
 
 #local
 import lib.cfg
 from . import suit
 
-
+ 
 
 class suit_con_handler(SocketServer.BaseRequestHandler):
     '''handle a reconnecting suit, put new descriptor in the suits, if the list of suits does not have the relevant SID create new.'''
@@ -40,7 +39,10 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         finally:
             sys.exc_traceback = None    # Help garbage collection
             #no matter what, if we are here, it is time to clear our netobj from suit.suits
-            suit.suits[1]=None
+            
+            if self.SID != None:
+                logger.debug('removed connection from suit "%s"'%self.SID)
+                suit.suits[self.SID][1]=None
     
     def setup(self):
         '''
@@ -60,8 +62,11 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         logger.info('handling new suit connection from:%s\n \
                      suit software version............:%s\n \
                      suit ID..........................:%s'%(self.client_address,self.suitversion,self.SID))
+        
+        #set up queue's
         self.incomingq = Queue.Queue(10) #read from suit
         self.outgoingq= Queue.Queue(10) #headed to suit
+        
         
         #set timeout for network latency
         self.request.settimeout(0.5)
@@ -82,11 +87,20 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
             s=suit.suit(self.SID)
             suit.suits[self.SID]=[s,self]
             
-            
+    def close(self):
+        self.write_thread.terminate()
+        self.run_handler=False
+        time.sleep(0.25)
+        self.request.close()
+        
     def handle(self):
-        while True:
-            select.select([self.request],[],[])
-            self.handle_one()
+        self.run_handler=True
+        while self.run_handler:
+            readready,writeready,exceptionready = select.select([self.request],[],[],0.25)
+            for streamobj in readready:
+                if streamobj == self.request:
+                    self.handle_one()
+                    
     def handle_one(self):
         header = self.request.recv(8)
         content_len = struct.unpack('I',header[:4])[0]

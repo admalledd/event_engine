@@ -100,6 +100,8 @@ def main():
         pygame.time.wait(10)
         for event in pygame.event.get():
             if event.type == QUIT:
+                suit.outgoingq.put(('dcon',json.dumps({'reason':'test over'})))
+                pygame.time.wait(250)
                 pygame.quit()
                 return None
             elif event.type == MOUSEBUTTONDOWN and event.button==1:

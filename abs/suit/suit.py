@@ -1,6 +1,6 @@
 import logging
 logger = logging.getLogger('abs.suit.suit')
-import threading
+from lib import thread2 as threading
 import time
 import json
 
@@ -14,7 +14,6 @@ class suit(object):
     '''
     self.sid == suit identification descriptor, each suit is unique.
     
-    self.wr == weakref to the suit connection handler, allows for it to die, but must be careful to check its life each time...
     '''
     def __init__(self,sid):
         self.SID=sid
@@ -22,7 +21,8 @@ class suit(object):
         'ghit':self.got_hit,                #got hit from another suit
         'stup':self.status_update,          #status update, normaly a position update, or a health update from a preveious got_hit()
         'ping':self.ping,                   #just a simple ping to keep the lines open, data is reported back, and logger.debug()'d
-        'pong':self.pong                   #simmilar to above, but no reply needed, only log data
+        'pong':self.pong,                   #simmilar to above, but no reply needed, only log data
+        'dcon':self.close_connection
         }
         self.status={#json-able data structure with all relavent suit data
         'health':100,
@@ -60,3 +60,7 @@ class suit(object):
     def got_hit(self,data):
         #in the future, load weapon from weapons in the arena
         logger.info('suit %s got hit with weapon "%s"'%(self.SID,data['weapon']))
+    
+    def close_connection(self,data):
+        logger.info('suit %s requesting closing network, "%s"'%(self.SID,data))
+        suits[self.SID][1].close()
