@@ -12,6 +12,7 @@ set_dir code doc:::
         3:::if none of these worked, find the location of this file and use its parent directory.'''
 import os
 import logging
+import logging.handlers
 from lib.decorators import disabled,enabled
 import lib
 
@@ -103,7 +104,7 @@ def init(LOGFILENAME=None):
     # set up logging to file - see previous section for more details
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                        datefmt='%m-%d %H:%M',
+                        datefmt='%m-%d %H:%M:%S',
                         filename=log_name,
                         filemode='w')
     # define a Handler which writes INFO messages or higher to the sys.stderr
@@ -115,6 +116,13 @@ def init(LOGFILENAME=None):
     console.setFormatter(formatter)
     # add the handler to the root logger
     logging.getLogger('').addHandler(console)
+    
+    #make a socket handler, use same as file format
+    streamer = logging.handlers.SocketHandler(lib.cfg.main['log_settings']['stream_host'], lib.cfg.main['log_settings'].as_int('stream_port'))
+    streamer.setLevel(logging.DEBUG)
+    streamer.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
+    logging.getLogger('').addHandler(streamer)
+    
     lib.logger = logging.getLogger('lib')
     lib.logger.info('logger set. logging to file:"%s"'%(log_name))
     lib.logger.debug('current path: %s'%os.getcwd())

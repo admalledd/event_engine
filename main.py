@@ -13,7 +13,8 @@ l={'l':[]}
 def main():
     #lib.cfg.add('config.ini',name='main')
     abs.suit.init()
-    time.sleep(600)
+    while True:
+        time.sleep(1)
     
 def test():
     pass
