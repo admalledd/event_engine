@@ -8,7 +8,10 @@ import json
 import lib.common
 import lib.cfg
 
-suits={}#format: {SID:[suitobj,netobj]}
+
+##import loop to mainfile
+import __main__#for __main__.gametype which is a gametype object
+suits={}#format: {SID:[suitobj,absobj]}
 
 class suit(object):
     '''
@@ -43,10 +46,10 @@ class suit(object):
             logger.debug((short_func,data))
         
         self.translation_codes[short_func](data)
-        
     def ping(self,data):
         if 'pingdata' in data:
             logger.info('suit %s pinged with data: %s'%(self.SID,data))
+            print suits
         return_data=json.dumps(data)
         suits[self.SID][1].outgoingq.put(('pong',return_data))
     
@@ -60,7 +63,8 @@ class suit(object):
     def got_hit(self,data):
         #in the future, load weapon from weapons in the arena
         logger.info('suit %s got hit with weapon "%s"'%(self.SID,data['weapon']))
-    
+        if __main__.gametype is not None:
+            __main__.gametype.suit.gothit(self,data)
     def close_connection(self,data):
         logger.info('suit %s requesting closing network, "%s"'%(self.SID,data))
         suits[self.SID][1].close()
