@@ -9,14 +9,18 @@ import lib.common
 import lib.cfg
 
 
-##import loop to mainfile
+##import loop to mainfile!! (way around this concept? move game loop to new file?)
 import __main__#for __main__.gametype which is a gametype object
-suits={}#format: {SID:[suitobj,absobj]}
+suits={}#format: {SID:[suitobj,netobj]}
 
 class suit(object):
     '''
     self.sid == suit identification descriptor, each suit is unique.
     
+    
+    
+    suit code in the abstraction layer deals with translating the json (or dictionary) input to the relevant functions
+    in the game code suit object. 
     '''
     def __init__(self,sid):
         self.SID=sid
@@ -51,6 +55,7 @@ class suit(object):
             logger.info('suit %s pinged with data: %s'%(self.SID,data))
             print suits
         return_data=json.dumps(data)
+        print return_data
         suits[self.SID][1].outgoingq.put(('pong',return_data))
     
     def pong(self, data):

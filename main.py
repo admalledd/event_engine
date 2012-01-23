@@ -7,7 +7,7 @@ import lib
 import lib.cfg
 import lib.common
 lib.common.init()
-import abs.suit
+import abs
 
 import games
 
@@ -24,12 +24,11 @@ def main():
         gametype code overrides code from normal play via the lazerserver calling (in order) gametype code, then default code (default normally only does heartbeats)
         gametype code inherits from abstract code from the abs.* overriding with its own functions
     '''
-    abs.suit.init()
+    abs.init()#start abstraction code, starts network server
     while True:
-        time.sleep(1)
+        time.sleep(1)#nothing to do in main code yet, all is in background threads
     
-def test():
-    pass
+
 if __name__ == '__main__':
     lib.common.debug(5)
     main()

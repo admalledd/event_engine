@@ -10,6 +10,7 @@ import os
 import textwrap
 import time
 import collections
+import string
 
 import pygame
 pygame.init()
@@ -17,7 +18,7 @@ from pygame.locals import *
 
 sys.path.insert(0,os.path.join(os.getcwd(),'..'))
 import lib.decorators
-HOST, PORT = "localhost", 1987
+HOST, PORT = "localhost", 1980
 SID = 127
 
 class con(object):
@@ -54,7 +55,8 @@ class con(object):
     def handle(self):
         while True:
             header = self.sock.recv(8)
-            print repr(header)
+            #enable if header data is in question. remember how it is packed!
+            ##print repr(header)
             content_len = struct.unpack('I',header[:4])[0]
             #see description above for header layout
             short_func = header[4:]
@@ -72,9 +74,9 @@ class con(object):
                 data = ''.join(data)
             else:
                 data = self.sock.recv(content_len)
-        
+            
             data=json.loads(data)
-        
+            print data#what do we do with data that comes from the server?
     def make_packet(self,action,data):
         '''
         this function is broken out so others beyond the writer can use it
@@ -89,8 +91,7 @@ class con(object):
         '''
         if len(action) !=4:
             raise Exception('action must be 4 chars.')
-        if not isinstance(data, basestring):
-            data = json.dumps(data)
+        data = json.dumps(data)
         header=struct.pack('I',len(data))+action
         print header+data
         return header+data

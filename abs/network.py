@@ -180,4 +180,4 @@ def init():
     su_server=SocketServer.ThreadingTCPServer((lib.cfg.main['abs_suit_server']['host'],lib.cfg.main['abs_suit_server'].as_int('port')), suit_con_handler)
     su_server.daemon_threads = True
     su_server_thread = threading.Thread(target=run_server)
-    su_server_thread.setDaemon(True)
+    su_server_thread.setDaemon(True)#start in new thread as to not hang the main thread in case we want console acsess (ipython?)
