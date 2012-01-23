@@ -9,6 +9,8 @@ import lib.common
 lib.common.init()
 import abs.suit
 
+import games
+
 gametype=None#gametype is started for each game, server runs one game at a time right now
 def main():
     '''
