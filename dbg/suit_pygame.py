@@ -38,7 +38,7 @@ class con(object):
         self.sock.send('lzr debug pygame')
         #send SID next
         self.sock.send(struct.pack('q',SID))
-        
+        self.sock.send('s')
         self.w_thread = threading.Thread(target=self.write)
         self.w_thread.setDaemon(True)
         self.w_thread.start()
@@ -56,7 +56,7 @@ class con(object):
         while True:
             header = self.sock.recv(8)
             #enable if header data is in question. remember how it is packed!
-            ##print repr(header)
+            print repr(header)
             content_len = struct.unpack('I',header[:4])[0]
             #see description above for header layout
             short_func = header[4:]

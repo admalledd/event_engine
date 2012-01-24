@@ -18,12 +18,21 @@ import time
 
 #local
 import lib.cfg
+
+#abs layer imports, used for the creation of objects and finding the obj list for the relevent items
 from . import suit
 
- 
+#dict for "objtype byte" to (class,dict obj)
+objtype = {\
+          "s":(suit.suit,suit.suits),#suits
+          "a":(None,None),#area tiles
+          "g":(None,None),#gameobjects 
+          "d":(None,None)#data accessors
+          }
 
-class suit_con_handler(SocketServer.BaseRequestHandler):
-    '''handle a reconnecting suit, put new descriptor in the suits, if the list of suits does not have the relevant SID create new.'''
+
+class abs_con_handler(SocketServer.BaseRequestHandler):
+    '''handle a reconnecting object, put new descriptor in the relevent connection dict, if the relevent list does not have the relevant OID create new.'''
     def __init__(self, request, client_address, server):
         self.request = request
         self.client_address = client_address
@@ -37,31 +46,33 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
             #log exception and end connection handler
             self.finnish_ex()
         finally:
-            sys.exc_traceback = None    # Help garbage collection
-            #no matter what, if we are here, it is time to clear our netobj from suit.suits
-            
-            if self.SID != None:
-                logger.debug('removed connection from suit "%s"'%self.SID)
-                suit.suits[self.SID][1]=None
+            sys.exc_traceback = None    # Help garbage collection?
+            #no matter what, if we are here, it is time to clear our netobj from the relevent connection dict
+            #look into possibly creating a dummy netobj that wont crash the other objects?
+            if self.OID != None:
+                logger.debug('removed connection from suit "%s"'%self.OID)
+                suit.suits[self.OID][1]=None
     
     def setup(self):
         '''
-        create queue's and get the SID. place handler in suits
+        create queue's and get the OID. place handler in suits
         
         queue's are in self.qu{first_tpye:queue}
         '''
         #suit version: 16 char string representing version, start with 'lzr'
-        self.SID=None#start workable
+        self.OID=None#start workable
         self.suitversion=self.request.recv(16)
         if not self.suitversion.startswith('lzr'):
             raise Excption('connection not from suit to suit server!')
         
-        #SID is the second thing sent over the wire
-        self.SID=struct.unpack('q',self.request.recv(8))[0]
+        #OID is the second thing sent over the wire
+        self.OID=struct.unpack('q',self.request.recv(8))[0]
+        #after OID is the single object type byte
+        self.objtype = self.request.recv(1)
         
         logger.info('handling new suit connection from:%s\n \
                      suit software version............:%s\n \
-                     suit ID..........................:%s'%(self.client_address,self.suitversion,self.SID))
+                     suit ID..........................:%s'%(self.client_address,self.suitversion,self.OID))
         
         #set up queue's
         self.incomingq = Queue.Queue(10) #read from suit
@@ -79,19 +90,37 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
         
         
         
-        if self.SID in suit.suits and suit.suits[self.SID][1] is not None:
-            logger.warn('new connection for %s is already connected, overwritting old with new'%self.SID)
-            suit.suits[self.SID][1]=self
+        if self.OID in self.get_objlist() and self.get_objlist()[self.OID][1] is not None:
+            logger.warn('new connection for %s is already connected, overwritting old with new'%self.OID)
+            #as quickly as possible set up the new connection, after set up then we close the old connection
+            #TODO:: find if an error in closing old will block/error the new connection
+            old_conn=self.get_objlist()[self.OID][1]
+            self.get_objlist()[self.OID][1]=self
+            old_conn.close()
         else:
-            logger.info('new suit object being created for %s'%self.SID)
-            s=suit.suit(self.SID)
-            suit.suits[self.SID]=[s,self]
+            logger.info('new netobj object being created for %s'%self.OID)
+            s=self.get_objclass()(self.OID)
+            self.get_objlist()[self.OID]=[s,self]
             
+    def get_objlist(self):
+        '''always used to make refrences as weak as possible without weakref's
+        returns the obj dict (meaning it is not actually a list!)
+        '''
+        return objtype[self.objtype][1]
+        
+    def get_objclass(self):
+        '''always used to make references as weak as possible without weakref's'''
+        return objtype[self.objtype][0]
+        
+    def get_objinst(self):
+        '''get the object instance for this net instance, we dont store the ref because we want to be weak incase of problems'''
+        return self.get_objlist()[self.OID][0]
+        
     def close(self):
         self.write_thread.terminate()
         self.run_handler=False
-        time.sleep(0.25)
-        self.request.close()
+        time.sleep(0.25)#wait for the handlers to close normaly, but we can force it as well...
+        self.request.close()#and if the handler is still open, this kills it with socket errors
         
     def handle(self):
         self.run_handler=True
@@ -120,10 +149,11 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
             data = ''.join(data)
         else:
             data = self.request.recv(content_len)
-        
-        data=json.loads(data)
-        #add to incomingq, for suit to read and actupon
-        suit.suits[self.SID][0].run_packet(short_func,data)
+        print (short_func,data)
+        jdata=json.loads(data)#must always have json data, of none/invalid let loads die
+        #pass to for suit to read and act upon
+        print (short_func,jdata)
+        self.get_objinst().run_packet(short_func,jdata)
         
     def make_packet(self,action,data):
         '''
@@ -153,31 +183,31 @@ class suit_con_handler(SocketServer.BaseRequestHandler):
             ##todo::: add to stack for reliability the logging of all data out
             self.request.sendall(packet)
     def finnish(self):
-        logger.warn('suit %s requested connection closed.'%self.SID)
+        logger.warn('OBJECT %s requested connection closed.'%self.OID)
         
         
     def finnish_ex(self):
         buff=sio()
         traceback.print_exc(file=buff)
-        if self.SID is not None:
-            buff.write('SUIT ID: %s\n'%self.SID)
-        logger.error('suit communication error! %s'%buff.getvalue())
+        if self.OID is not None:
+            buff.write('OBJECT ID: %s\n'%self.OID)
+        logger.error('abs_network communication error! %s'%buff.getvalue())
         buff.close()
         del buff#stupid GC hates me
         
 
-su_server=None
-su_server_thread=None
+abs_server=None
+abs_server_thread=None
 def init():
-    global su_server
-    global su_server_thread
+    global abs_server
+    global abs_server_thread
     def run_server():
         try:
-            su_server.serve_forever()
+            abs_server.serve_forever()
         finally:
-            su_server.server.close()
+            abs_server.server.close()
     #set up our server. doesnt start yet, only when abs.suit.init() is called
-    su_server=SocketServer.ThreadingTCPServer((lib.cfg.main['abs_suit_server']['host'],lib.cfg.main['abs_suit_server'].as_int('port')), suit_con_handler)
-    su_server.daemon_threads = True
-    su_server_thread = threading.Thread(target=run_server)
-    su_server_thread.setDaemon(True)#start in new thread as to not hang the main thread in case we want console acsess (ipython?)
+    abs_server=SocketServer.ThreadingTCPServer((lib.cfg.main['abs_net_server']['host'],lib.cfg.main['abs_net_server'].as_int('port')), abs_con_handler)
+    abs_server.daemon_threads = True
+    abs_server_thread = threading.Thread(target=run_server)
+    abs_server_thread.setDaemon(True)#start in new thread as to not hang the main thread in case we want console acsess (ipython?)

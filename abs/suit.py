@@ -16,7 +16,7 @@ suits={}#format: {SID:[suitobj,netobj]}
 class suit(object):
     '''
     self.sid == suit identification descriptor, each suit is unique.
-    
+    self.sid == netobj.OID
     
     
     suit code in the abstraction layer deals with translating the json (or dictionary) input to the relevant functions
@@ -67,6 +67,7 @@ class suit(object):
         
     def got_hit(self,data):
         #in the future, load weapon from weapons in the arena
+        print data
         logger.info('suit %s got hit with weapon "%s"'%(self.SID,data['weapon']))
         if __main__.gametype is not None:
             __main__.gametype.suit.gothit(self,data)

@@ -30,7 +30,7 @@ from . import network
 def init():
     '''start su_server thread, and watch thing-a-ma-jigs'''
     network.init()
-    network.su_server_thread.start()
-    logger.info('abs.suit server started on port %s'%lib.cfg.main['abs_suit_server'].as_int('port'))
+    network.abs_server_thread.start()
+    logger.info('abs server started on port %s'%lib.cfg.main['abs_net_server'].as_int('port'))
 
 
