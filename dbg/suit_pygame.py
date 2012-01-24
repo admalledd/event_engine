@@ -56,7 +56,7 @@ class con(object):
         while True:
             header = self.sock.recv(8)
             #enable if header data is in question. remember how it is packed!
-            print repr(header)
+            ##print repr(header)
             content_len = struct.unpack('I',header[:4])[0]
             #see description above for header layout
             short_func = header[4:]
@@ -93,7 +93,8 @@ class con(object):
             raise Exception('action must be 4 chars.')
         data = json.dumps(data)
         header=struct.pack('I',len(data))+action
-        print header+data
+        #remove if debuging network data
+        ##print (header,data)
         return header+data
         
     def write(self):
@@ -285,9 +286,9 @@ def main():
                         btn_connect.render()
                 #send hit packet
                 if btn_do_hit.options.rect.collidepoint(event.pos):
-                    suit.outgoingq.put(('ghit',json.dumps({'weapon':'basic','team':'teamblu','from':7589})))
+                    suit.outgoingq.put(('ghit',{'weapon':'basic','team':'teamblu','from':7589}))
                 elif btn_do_ping.options.rect.collidepoint(event.pos):
-                    suit.outgoingq.put(('ping',json.dumps({'pingdata':'randomstring','team':'teamblu','from':7589})))
+                    suit.outgoingq.put(('ping',{'pingdata':'randomstring','team':'teamblu','from':7589}))
         screen.fill((0, 0, 0))
         
         btn_connect.blit(screen)

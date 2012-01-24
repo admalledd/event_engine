@@ -149,10 +149,8 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
             data = ''.join(data)
         else:
             data = self.request.recv(content_len)
-        print (short_func,data)
         jdata=json.loads(data)#must always have json data, of none/invalid let loads die
         #pass to for suit to read and act upon
-        print (short_func,jdata)
         self.get_objinst().run_packet(short_func,jdata)
         
     def make_packet(self,action,data):
