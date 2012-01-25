@@ -20,7 +20,11 @@ class suit(object):
     
     
     suit code in the abstraction layer deals with translating the json (or dictionary) input to the relevant functions
-    in the game code suit object. 
+    in the game code suit object, also handles any connctivity/status information. 
+    
+    holds all stats for the current suit. no information is stored elsewhere in code about this suit except maybe in the debug area
+    also this is where any stats at the end of game (or during as well) is saved to the data base for later computation (signal sent from game
+    code at game end for new stats computation by the stats server)
     '''
     def __init__(self,sid):
         self.SID=sid
@@ -31,7 +35,7 @@ class suit(object):
         'pong':self.pong,                   #simmilar to above, but no reply needed, only log data
         'dcon':self.close_connection
         }
-        self.status={#json-able data structure with all relavent suit data
+        self.status={#json-able data structure with all relavent suit data and game data
         'health':100,
         'ammos':[100],
         'weapon':0,#weapon is the index for weapons and ammo
@@ -51,14 +55,16 @@ class suit(object):
         
         self.translation_codes[short_func](data)
     def ping(self,data):
+        '''suit ping'd the server, return pong and any data exactly as it was sent'''
         if 'pingdata' in data:
             logger.info('suit %s pinged with data: %s'%(self.SID,data))
-            print suits
+        
         return_data=json.dumps(data)
-        print return_data
         suits[self.SID][1].outgoingq.put(('pong',return_data))
     
     def pong(self, data):
+        '''server ping'd the suit, this is the return pong 
+        TODO: add server ping send, as well as travel time it takes to execute the command'''
         if 'pingdata' in data:
             logger.info('suit %s pinged with data: %s'%(self.SID,data))
     
@@ -69,7 +75,7 @@ class suit(object):
         #in the future, load weapon from weapons in the arena
         print data
         logger.info('suit %s got hit with weapon "%s"'%(self.SID,data['weapon']))
-        if __main__.gametype is not None:
+        if __main__.gametype is not None:#in reality, we should never have to check for None, as well as we need to know which game to play!
             __main__.gametype.suit.gothit(self,data)
     def close_connection(self,data):
         logger.info('suit %s requesting closing network, "%s"'%(self.SID,data))

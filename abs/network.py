@@ -32,7 +32,15 @@ objtype = {\
 
 
 class abs_con_handler(SocketServer.BaseRequestHandler):
-    '''handle a reconnecting object, put new descriptor in the relevent connection dict, if the relevent list does not have the relevant OID create new.'''
+    '''handle a reconnecting object, put new descriptor in the relevent connection dict, if the relevent list does not have the relevant OID create new.
+    
+    the interface that connects this to all other objects (eg the abs.suit.suit):
+        call obj.objlist[object ID][0].runpacket(func name,json data) for from obj->server data
+        read self.outgoingq and parse to send over the network to the suit/tile/gamething/debug session
+        
+        these are the only ways that data is sent/received
+        
+    '''
     def __init__(self, request, client_address, server):
         self.request = request
         self.client_address = client_address
