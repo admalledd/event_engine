@@ -66,6 +66,9 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
         create queue's and get the OID. place handler in suits
         
         queue's are in self.qu{first_tpye:queue}
+        
+        note that because we have no data yet for internal use we have to repeat much of the network code here
+        if any problems occur with network code, please check both places due to this repeat that is difficult to remove
         '''
         #suit version: 16 char string representing version, start with 'lzr'
         self.OID=None#start workable
