@@ -4,4 +4,7 @@
 echo "cleaning $(pwd)"
 
 echo "removing *.pyc"
-rm -r *.pyc
+find . -name '*.pyc' -print -exec rm {} \;
+
+echo "removing lazertag.log"
+rm lazertag.log
