@@ -25,8 +25,8 @@ from . import suit
 #dict for "objtype byte" to (class,dict obj)
 objtype = {\
           "s":(suit.suit,suit.suits),#suits
-          "a":(None,None),#area tiles
-          "g":(None,None),#gameobjects 
+          "t":(None,None),#area tiles
+          "g":(None,None),#gameobjects (turrets, targets etc) 
           "d":(None,None)#data accessors
           }
 
