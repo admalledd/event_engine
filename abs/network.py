@@ -21,11 +21,13 @@ import lib.cfg
 
 #abs layer imports, used for the creation of objects and finding the obj list for the relevent items
 from . import suit
-
-#dict for "objtype byte" to (class,dict obj)
+from . import tile
+import abs
+#dict for "objtype byte" to its class
+#note that all objects/clients share the same objects dictionary for ID --> netobj corelation
 objtype = {\
-          "s":(suit.suit,suit.suits),#suits
-          "t":(None,None),#area tiles
+          "s":suit.suit,#suits
+          "t":tile.tile,#area tiles
           "g":(None,None),#gameobjects (turrets, targets etc) 
           "d":(None,None)#data accessors
           }
@@ -53,13 +55,14 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
         except Exception:
             #log exception and end connection handler
             self.finnish_ex()
-        finally:
-            sys.exc_traceback = None    # Help garbage collection?
             #no matter what, if we are here, it is time to clear our netobj from the relevent connection dict
             #look into possibly creating a dummy netobj that wont crash the other objects?
             if self.OID != None:
                 logger.debug('removed connection from suit "%s"'%self.OID)
-                suit.suits[self.OID][1]=None
+                abs.objects[self.OID][1]=None
+        finally:
+            sys.exc_traceback = None    # Help garbage collection?
+            
     
     def setup(self):
         '''
@@ -106,8 +109,8 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
             #as quickly as possible set up the new connection, after set up then we close the old connection
             #TODO:: find if an error in closing old will block/error the new connection
             old_conn=self.get_objlist()[self.OID][1]
-            self.get_objlist()[self.OID][1]=self
             old_conn.close()
+            self.get_objlist()[self.OID][1]=self
         else:
             logger.info('new netobj object being created for %s'%self.OID)
             s=self.get_objclass()(self.OID)
@@ -117,15 +120,15 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
         '''always used to make refrences as weak as possible without weakref's
         returns the obj dict (meaning it is not actually a list!)
         '''
-        return objtype[self.objtype][1]
+        return abs.objects
         
     def get_objclass(self):
         '''always used to make references as weak as possible without weakref's'''
-        return objtype[self.objtype][0]
+        return objtype[self.objtype]
         
     def get_objinst(self):
         '''get the object instance for this net instance, we dont store the ref because we want to be weak incase of problems'''
-        return self.get_objlist()[self.OID][0]
+        return abs.objects[self.OID][0]
         
     def close(self):
         self.write_thread.terminate()

@@ -23,7 +23,7 @@ import lib.cfg
 #abs layer
 from . import network
 
-
+objects={}
 
 
 
