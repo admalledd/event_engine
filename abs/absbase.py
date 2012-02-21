@@ -38,6 +38,7 @@ class absbase(object):
         'dcon':self.close_connection        
         }
         self.status={#json-able data structure with all relavent object data and game data, empty here in this code
+        'arena':0#int of what arena this object is in (should be updated from the client on connect, must not be zero for long :D)
         }
     def run_packet(self,obtype,short_func,data):
         '''it is up to this function to decide what function gets called for what
@@ -52,8 +53,8 @@ class absbase(object):
         else:
             #not in tranlation codes, try game specific codes
             ran=False
-            if __main__.gametype is not None:
-                ran = getattr(__main__.gametype, obtype).run_packet(self,short_finc,data)
+            if __main__.gametype[0]['running']:
+                ran = getattr(__main__.gametype[self.status['arena'], obtype).run_packet(self,short_finc,data)
                 
             if not ran:#game code did not have the required packet data! oh teh noes!
                 logger.error('packet unable to be run ! %s'%((self.ID,short_func,data)))
@@ -76,11 +77,10 @@ class absbase(object):
         
     def got_hit(self,data):
         #in the future, load weapon from weapons in the arena
-        ##TODO: remove debugish lines when we ahve more stuff, and place it in the debug inspector area. as well as moving all code to gamecode
+        ##TODO: remove debugish lines when we have more stuff, and place it in the debug inspector area. as well as moving all code to gamecode
         print data
         logger.info('object %s got hit with weapon "%s"'%(self.ID,data['weapon']))
-        if __main__.gametype is not None:#in reality, we should never have to check for None, as well as we need to know which game to play!
-            __main__.gametype.tile.gothit(self,data)
+        
     def close_connection(self,data):
         logger.info('object %s requesting closing network, "%s"'%(self.ID,data))
         abs.objects[self.ID][1].close()

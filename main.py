@@ -11,7 +11,7 @@ import abs
 
 import games
 
-gametype=None#gametype is started for each game, server runs one game at a time right now
+gametype=[{'running':False},None,None]
 def main():
     '''
     1:start servers
@@ -24,7 +24,15 @@ def main():
         gametype code overrides code from normal play via the lazerserver calling (in order) gametype code, then default code (default normally only does heartbeats)
         gametype code inherits from abstract code from the abs.* overriding with its own functions
     '''
+    
+    
     abs.init()#start abstraction code, starts network server
+    #suits and others should connect automatically. (maybe send UPD broadcast packet?)
+    ##TODO::: send broadcast packet saying server is up and running (if no error on ans.init())
+    
+    #choose games, start with default games (later make them replaceable)
+    gametype[1] = games.default()
+    gametpye[2] = games.default()
     while True:
         time.sleep(1)#nothing to do in main code yet, all is in background threads
     
