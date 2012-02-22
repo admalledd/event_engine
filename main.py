@@ -32,7 +32,8 @@ def main():
     
     #choose games, start with default games (later make them replaceable)
     gametype[1] = games.default()
-    gametpye[2] = games.default()
+    gametype[2] = games.default()
+    gametype[0]['running']=True
     while True:
         time.sleep(1)#nothing to do in main code yet, all is in background threads
     

@@ -31,7 +31,6 @@ class absbase(object):
         self.ID=id
         #basic translation codes for things that are not item specific
         self.translation_codes={\
-        'ghit':self.got_hit,                #got hit with a shot (tend to use it for dropping "mines")
         'stup':self.status_update,          #status update, normaly a health update from a preveious got_hit()
         'ping':self.ping,                   #just a simple ping to keep the lines open, data is reported back, and logger.debug()'d
         'pong':self.pong,                   #simmilar to above, but no reply needed, only log data
@@ -54,10 +53,10 @@ class absbase(object):
             #not in tranlation codes, try game specific codes
             ran=False
             if __main__.gametype[0]['running']:
-                ran = getattr(__main__.gametype[self.status['arena'], obtype).run_packet(self,short_finc,data)
+                ran = getattr(__main__.gametype[self.status['arena']], obtype).run_packet(self,short_func,data)
                 
             if not ran:#game code did not have the required packet data! oh teh noes!
-                logger.error('packet unable to be run ! %s'%((self.ID,short_func,data)))
+                logger.error('packet unable to be run ! %s'%(str((self.ID,short_func,data))))
     def ping(self,data):
         '''object ping'd the server, return pong and any data exactly as it was sent'''
         if 'pingdata' in data:
@@ -74,12 +73,6 @@ class absbase(object):
     
     def status_update(self,data):
         self.status.update(data)
-        
-    def got_hit(self,data):
-        #in the future, load weapon from weapons in the arena
-        ##TODO: remove debugish lines when we have more stuff, and place it in the debug inspector area. as well as moving all code to gamecode
-        print data
-        logger.info('object %s got hit with weapon "%s"'%(self.ID,data['weapon']))
         
     def close_connection(self,data):
         logger.info('object %s requesting closing network, "%s"'%(self.ID,data))

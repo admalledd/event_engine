@@ -280,6 +280,7 @@ def main():
                     else:
                         print "connecting"
                         suit.connect()
+                        suit.outgoingq.put(('stup',{'arena':1}))
                         log_reader.open()
                         suit.is_connected=True
                         btn_connect.options.text='disconnect from server'
