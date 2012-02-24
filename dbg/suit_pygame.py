@@ -49,6 +49,8 @@ class con(object):
         self.is_connected=True
         
     def close(self):
+        self.outgoingq.put(('dcon',{}))
+        time.sleep(0.25)
         self.sock.close()
         self.is_connected=False
         
@@ -258,7 +260,7 @@ def main():
     log_reader=logreader()
     
     while True:
-        pygame.time.wait(25)
+        pygame.time.wait(100)
         screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == QUIT:

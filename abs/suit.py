@@ -29,7 +29,9 @@ class suit(absbase.absbase):
         'team':'red',
         'player_name':'john_doe'
         })
-    
+    def __del__(self):
+        logger.error('deleting object!')
+        print self.status
     def run_packet(self,short_func,data):
         '''pass thinking off to the super class, but add in our obtype
         '''

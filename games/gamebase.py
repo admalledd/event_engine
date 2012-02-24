@@ -14,7 +14,19 @@ class gamebase(object):
         self.tile = tilebase()
         self.suit = suitbase()
         self.gobj = gobjbase()
+    def __del__(self):
+        '''if we are really high on the debugging, log deletion of important game objects
         
+        descoverd while testing this: it apeares that the translatio_codes are creating a refrence cycle
+        that is not being garbage collected D:
+        
+        basically, this is here to clean up everything before we leave.
+        '''
+        del self.suit.translation_codes
+        del self.tile.translation_codes
+        del self.gobj.translation_codes
+        if lib.common.debug()>4:
+            logger.debug('game deleted::%s, %s'%(self.__class__, self))    
         
 class objbase(object):
     def __init__(self):
@@ -24,7 +36,11 @@ class objbase(object):
         
         '''
         self.translation_codes={'ghit':self.got_hit}
-        
+    if lib.common.debug() >4:#dont even include this function when running normally, dont want to have it cause collection errors
+        print 'test123'
+        def __del__(self):
+            '''if we are really high on the debugging, log deletion of important game objects'''
+            logger.debug('object deleted::%s, %s'%(self.__class__, self))
     def run_packet(self,proxyobj,short_func,data):
         '''it is up to this function to decide what function gets called for what
         (got_hit(self.id,self,other), player_move(self.id,self,old_loc,new_loc) ect....
@@ -32,7 +48,7 @@ class objbase(object):
         all functions that are called should return sucsess or failure (true/false)
         '''
         
-        if lib.common.debug() >4:
+        if lib.common.debug() >3:
             #high debug
             logger.debug((short_func,data))
         if short_func in self.translation_codes:
@@ -40,9 +56,12 @@ class objbase(object):
             
     def got_hit(self,proxyobj,data):
         #in the future, load weapon from weapons in the arena
-        ##TODO: remove debugish lines when we have more stuff, and place it in the debug inspector area. as well as moving all code to gamecode
-        print data
-        logger.info('object %s got hit with weapon "%s"'%(proxyobj.ID,data['weapon']))
+        if 'hits' not in proxyobj.status:
+            proxyobj.status['hits'] = 1
+        else:
+            proxyobj.status['hits'] +=1
+            
+        logger.info('object %s got hit with weapon "%s", hit total of %s times'%(proxyobj.ID,data['weapon'], proxyobj.status['hits']))
         return True
 class tilebase(objbase):
     def __init__(self):

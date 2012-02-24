@@ -106,10 +106,15 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
         
         if self.OID in self.get_objlist() and self.get_objlist()[self.OID][1] is not None:
             logger.warn('new connection for %s is already connected, overwritting old with new'%self.OID)
+            
             #as quickly as possible set up the new connection, after set up then we close the old connection
             #TODO:: find if an error in closing old will block/error the new connection
             old_conn=self.get_objlist()[self.OID][1]
             old_conn.close()
+            self.get_objlist()[self.OID][1]=self
+            
+        elif self.OID in self.get_objlist() and self.get_objlist()[self.OID][1] is None:
+            logger.warn('re-establishing closed connection from %s'%self.OID)
             self.get_objlist()[self.OID][1]=self
         else:
             logger.info('new netobj object being created for %s'%self.OID)
@@ -135,7 +140,7 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
         self.run_handler=False
         time.sleep(0.25)#wait for the handlers to close normaly, but we can force it as well...
         self.request.close()#and if the handler is still open, this kills it with socket errors
-        
+        self.get_objlist()[self.OID][1]=None
     def handle(self):
         self.run_handler=True
         while self.run_handler:

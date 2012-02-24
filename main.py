@@ -7,6 +7,8 @@ import lib
 import lib.cfg
 import lib.common
 lib.common.init()
+#set debug here so that all later imports can use import-time redefines
+lib.common.debug(5)
 import abs
 
 import games
@@ -25,7 +27,6 @@ def main():
         gametype code inherits from abstract code from the abs.* overriding with its own functions
     '''
     
-    
     abs.init()#start abstraction code, starts network server
     #suits and others should connect automatically. (maybe send UPD broadcast packet?)
     ##TODO::: send broadcast packet saying server is up and running (if no error on ans.init())
@@ -39,5 +40,4 @@ def main():
     
 
 if __name__ == '__main__':
-    lib.common.debug(5)
     main()
