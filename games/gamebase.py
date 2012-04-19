@@ -36,11 +36,6 @@ class objbase(object):
         
         '''
         self.translation_codes={'ghit':self.got_hit}
-    if lib.common.debug() >4:#dont even include this function when running normally, dont want to have it cause collection errors
-        print 'test123'
-        def __del__(self):
-            '''if we are really high on the debugging, log deletion of important game objects'''
-            logger.debug('object deleted::%s, %s'%(self.__class__, self))
     def run_packet(self,proxyobj,short_func,data):
         '''it is up to this function to decide what function gets called for what
         (got_hit(self.id,self,other), player_move(self.id,self,old_loc,new_loc) ect....

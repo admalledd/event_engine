@@ -7,14 +7,14 @@ from . import absbase
 import abs
 
 
-class tile(object):
+class tile(absbase.absbase):
     '''
     self.ID == tile identification descriptor, each tile is unique.
-    self.ID == netobj.OID
+    self.ID == netobj.OID   aka:: abs.objects[self.ID][1].OID == self.ID
     
     
     '''
-    def __init__(self,id):
+    def __init__(self,ID):
         
         #initialize basic common things, including ID
         absbase.absbase.__init__(self,ID)

@@ -10,7 +10,7 @@ import abs
 class suit(absbase.absbase):
     '''
     self.ID == suit identification descriptor, each suit is unique.
-    self.ID == netobj.OID   aka:: suits[self.ID][1].OID == self.ID
+    self.ID == netobj.OID   aka:: abs.objects[self.ID][1].OID == self.ID
     
     
     '''
@@ -29,9 +29,7 @@ class suit(absbase.absbase):
         'team':'red',
         'player_name':'john_doe'
         })
-    def __del__(self):
-        logger.error('deleting object!')
-        print self.status
+
     def run_packet(self,short_func,data):
         '''pass thinking off to the super class, but add in our obtype
         '''

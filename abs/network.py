@@ -158,6 +158,7 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
             if ch not in string.ascii_letters:
                 raise Exception('received bad call function, must be ascii_letters. got:"%s"'%short_func)
         ##read data in 1024 byte chunks, but once under, use actual size
+        ##TODO: rate limmit the input, as is we read more and more data till we run out of ram. we need a max packet size and handler
         if content_len >1024:
             tcon = content_len
             data = []
