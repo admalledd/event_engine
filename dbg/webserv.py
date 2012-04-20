@@ -7,7 +7,6 @@ note that this is copied from an old dynamic webserver project, minimal cleaning
 
 
 '''
-import string,cgi,time,os,sys
 import os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import imp
@@ -38,12 +37,13 @@ class MyHandler(BaseHTTPRequestHandler):
         self.wfile.write(rawdata)
         
     def pyfile(self):
-        self.send_response(200)#yes, we are forcing the use of these headers, might be better to have a normal convieniance function then...
-        self.send_header('Content-type',    'text/html')
-        self.end_headers()
+        if not self.posting:
+            #if we are posting data we leave everything up to the script (move to convieniance function and script must call it?)
+            self.send_response(200)#yes, we are forcing the use of these headers, might be better to have a normal convieniance function then...
+            self.send_header('Content-type',    'text/html')
+            self.end_headers()
         try:
-            modual = imp.load_source('', os.path.join(os.getcwd(),'webfiles',self.path[1:]))
-
+            modual = imp.load_source('', webfiles.getsyspath(self.path))
             modual.main(self)
         except:
             self.wfile.write('<HTML><BODY><PRE>\n\n')
@@ -62,6 +62,7 @@ class MyHandler(BaseHTTPRequestHandler):
         return webfiles.exists(path)
         
     def do_GET(self):
+        self.posting = False
         try:
             if '?' in self.path:
                 #we have some url parsing to do, split that other stuff into raw data...
@@ -101,29 +102,22 @@ class MyHandler(BaseHTTPRequestHandler):
      
 
     def do_POST(self):
+        self.posting=True
         try:
-            ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
-            if ctype == 'multipart/form-data':
-                query=cgi.parse_multipart(self.rfile, pdict)
-            self.send_response(200)#POST OK
-            self.end_headers()
-            try:
-                modual = imp.load_source('', os.path.join(os.getcwd(),'webfiles',self.path[1:]))
-                modual.main(self,query)
-            except:
-                self.wfile.write('<HTML><BODY><PRE>\n\n')
-                self.wfile.write("Exception in user code:\n")
-                self.wfile.write(str('-'*60)+'\n\n')
-                traceback.print_exc(file=self.wfile)
-                
-                self.wfile.write(str('-'*60)+'\n\n')
-                self.wfile.write('path::%s'%self.path)
-                self.wfile.write('\n\n</HTML></BODY></PRE>\n')
+            if '?' in self.path:
+                #we have some url parsing to do, split that other stuff into raw data...
+                self.path,self.path_args = self.path.split('?',1)
+                ##todo: parse the args down even more into usable data chunks. ignore for now
             
+            elif self.path.endswith('.py') and self.is_webfile(): #python dynamic code?
+                self.pyfile()
                 return
+            
         except :
-            pass
-
+            traceback.print_exc(file=self.wfile)
+            self.send_error(500, 'Server could not POST data to: %s'%self.path)
+        #fell through, unable to POST
+        self.send_error(404, 'File Not Found: %s'%self.path)
 PORT = 8081
 welcome='''\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 httpserver started on port: %i
@@ -131,8 +125,6 @@ httpserver started on port: %i
 ''' % (PORT)
 
 def main():
-    import time
-    time.sleep(0.1)
     server = HTTPServer(('', PORT), MyHandler)
     print welcome
     server.serve_forever()
