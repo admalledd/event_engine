@@ -1,0 +1,61 @@
+/* Test CSS sheet
+april 19 2012
+i duno lol */
+
+
+
+body{
+margin:0px;
+padding:0px;
+margin-top:0px;
+}
+
+ul.nav
+{
+list-style-type:none;
+margin:0;
+padding:0;
+}
+li.nav
+{
+display:inline;
+}
+
+div.navbar{
+
+text-align:center;
+background-color:red; 
+margin: 0%;
+height: 5%
+
+}
+
+div.optionbar{
+
+float:left;
+width:10%;
+height:95%;
+background-color:blue;
+margin: 0%;
+text-align: center;
+}
+
+div.maincontent{
+
+float: left;
+background-color:green;
+width: 90%;
+height: 95%;
+margin: 0%;
+text-align: center;
+
+}
+
+div.option1{
+background-color:white;
+}
+
+div.option2{
+background-color:black;
+color: white;
+}
