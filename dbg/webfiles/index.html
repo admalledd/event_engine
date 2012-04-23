@@ -2,40 +2,40 @@
 
 <head>
 
-<link href="stylesheet.css" rel="stylesheet" type="text/css" />
+<link href="/loader.py?/stylesheet.css" rel="stylesheet" type="text/css" />
 
+<script src="/loader.py?/ajax/helper.js"></script>
+<script src="/loader.py?/ajax/log/log.js"></script>
+<script src="/loader.py?/ajax/main/main.js"></script>
+<script src="/loader.py?/ajax/auto_update.js"></script>
+<script type="text/javascript">
+//start by setting our common data that we need to change to for various pages
+
+
+
+</script>
 </head>
 
 <body>
 
 <div class="navbar">
-    <a href="#Arena">Arena</a> <a href="#Suits">Suits</a> <a href="#Server">Server</a> <a href="#Log">Log</a> <a href="#Links">Links</a>
+    <a href="#main" onclick="set_view_to_main()">Main</a> <a href="#Arena">Arena</a> <a href="#Suits">Suits</a> <a href="#Server">Server</a> <a href="#Log" onclick="set_view_to_log()">Log</a> <a href="#Links">Links</a>
 </div>
 
-<div class="optionbar">
+<div id="optionbar">
 
-    <div class="option1"> option 1 </div>
-    
-    <div class="option2"> option 2 </div>
-    
-    <div class="option1"> option 3 </div>
-    
-    <div class="option2"> option 4 </div>
-    
-    <div class="option1"> option 5 </div>
-    
-    <div class="option2"> option 6 </div>
+blank, waiting for set button to be pressed
 
 </div>
 
-<div class="maincontent">
+<div id="maincontent">
 
     filler content in the main div
 
 </div>
-<div class="statusbar">
+<div id="statusbar">
     status bar text
 </div>
-<body>
+</body>
 
 </html>

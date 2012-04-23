@@ -27,10 +27,10 @@ var testjdata=({
      ]
  });
 function update_POST() {
-    make_ajax_POST(testjdata,"/ajax/test_post.py",make_callback("myDiv"));
+    do_ajax_POST(testjdata,"/ajax/test_post.py",make_callback("myDiv"));
 }
 function update_GET() {
-    make_ajax_GET("/ajax/test_get.py",make_callback("myDiv"));
+    do_ajax_GET("/ajax/test_get.py",make_callback("myDiv"));
 }
 //setTimeout("update()",100); //example code for auto update function
 </script>

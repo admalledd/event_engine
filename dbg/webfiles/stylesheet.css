@@ -19,7 +19,7 @@ height: 5%;
 
 }
 
-div.optionbar{
+#optionbar{
 
 float:left;
 width:10%;
@@ -29,17 +29,17 @@ margin: 0%;
 text-align: center;
 }
 
-div.maincontent{
+#maincontent{
 
 float: left;
 background-color:green;
 width: 90%;
 height: 90%;
 margin: 0%;
-text-align: center;
+text-align: left;
 
 }
-div.statusbar{
+#statusbar{
 text-align:right;
 background-color:grey; 
 height: 95%;

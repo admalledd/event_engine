@@ -23,9 +23,6 @@ webfiles = fs.osfs.OSFS(os.path.join(os.getcwd(),'webfiles'))
 debugdata = {} #debug data that holds everything that we do that needs persistance. (set to {} again to reset? does memory clear properly?)
 
 class MyHandler(BaseHTTPRequestHandler):
-    def log_message(self, format, *args):
-        BaseHTTPRequestHandler.log_message(self, format, *args)
-        
     def send_html_header(self):
         '''send the most common header: the html headers. done here in case we want to change the normal headers at any time.
         scripts should normaly send headers with this, unless they are doing their own thing, at which point is why we allow 
@@ -53,6 +50,7 @@ class MyHandler(BaseHTTPRequestHandler):
             modual = imp.load_source('', webfiles.getsyspath(self.path))
             modual.main(self)
         except:
+            self.send_error(500, 'Internal server error')
             self.wfile.write('<HTML><BODY><PRE>\n\n')
             self.wfile.write("Exception in user code:\n")
             self.wfile.write(str('-'*60)+'\n\n')
