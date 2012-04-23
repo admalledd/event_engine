@@ -4,6 +4,9 @@ import collections
 import threading
 import time
 
+import fs.osfs
+pyfs = fs.osfs.OSFS(os.path.join(os.getcwd(),'..'))#get to the top level of the project
+logfile = 'lazertag.log'
 class logreader(object):
     def __init__(self):
         self.text=collections.deque([],25)
@@ -36,7 +39,7 @@ class logreader(object):
                 yield line
             print "ending logreader"
         try:
-            logfile = open(os.path.join(os.getcwd(),'..','lazertag.log'))
+            logfile = pyfs.open(logfile)
             loglines = follow(logfile)
             for line in loglines:
                 with self.txt_lock:

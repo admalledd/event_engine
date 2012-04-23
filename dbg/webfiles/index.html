@@ -7,6 +7,8 @@
 <script src="/loader.py?/ajax/helper.js"></script>
 <script src="/loader.py?/ajax/log/log.js"></script>
 <script src="/loader.py?/ajax/main/main.js"></script>
+<script src="/loader.py?/ajax/netobj/netobj.js"></script>
+<script src="/loader.py?/ajax/settings/settings.js"></script>
 <script src="/loader.py?/ajax/auto_update.js"></script>
 <script type="text/javascript">
 //start by setting our common data that we need to change to for various pages
@@ -19,7 +21,12 @@
 <body>
 
 <div class="navbar">
-    <a href="#main" onclick="set_view_to_main()">Main</a> <a href="#Arena">Arena</a> <a href="#Suits">Suits</a> <a href="#Server">Server</a> <a href="#Log" onclick="set_view_to_log()">Log</a> <a href="#Links">Links</a>
+    <a href="#main"       onclick="set_view_to_main()"     >Main</a>
+    <a href="#Arena"      onclick="return true;"           >Arena</a>
+    <a href="#NetObjects" onclick="set_view_to_netobj()"   >NetObjects</a>
+    <a href="#Settings"   onclick="set_view_to_settings()" >Settings</a>
+    <a href="#Log"        onclick="set_view_to_log()"      >Log</a>
+    <a href="#Links"      onclick="return true;"           >Links</a>
 </div>
 
 <div id="optionbar">

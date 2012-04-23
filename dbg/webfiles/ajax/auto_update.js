@@ -19,7 +19,7 @@ function auto_update() {
             
             else {
                 //the data sent does not match any plans that we have already placed, set the statusbar to this odd data
-                document.getElementById("statusbar").innerHTML=http.responseText;
+                //document.getElementById("statusbar").innerHTML=http.responseText;
             }
         }
     }

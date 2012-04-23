@@ -18,7 +18,7 @@ function do_ajax_POST(data,url,callback) {
     http.setRequestHeader("Content-length", data.length);
     http.setRequestHeader("Connection", "close");
     http.send(JSON.stringify(data));
-    status_update("ajax POST to '"+url+"' sent");
+    //status_update("ajax POST to '"+url+"' sent");
 }
 
 function do_ajax_GET(url,callback) {
@@ -33,7 +33,7 @@ function do_ajax_GET(url,callback) {
     http.onreadystatechange=function (){ callback(http) };
     http.open("GET",url,true);
     http.send();
-    status_update("ajax GET to '"+url+"' sent");
+    //status_update("ajax GET to '"+url+"' sent");
 }
 function make_callback(id) {
     /*

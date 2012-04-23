@@ -1,11 +1,5 @@
 function set_view_to_main(){
-    callback=function(http) {
-        if (http.readyState==4) {
-            status_update("callback for '" + id + "' called");
-            document.getElementById(id).innerHTML=http.responseText;
-            }
-        }
-    do_ajax_POST("get buttons","/ajax/main/buttons.py",make_callback("optionbar"));
+    do_ajax_POST("get buttons","/ajax/main/main.py",make_callback("optionbar"));
 }
 
 

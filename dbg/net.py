@@ -8,13 +8,12 @@ import Queue
 import socket
 import string
 
-from __main__ import SID
-
 HOST, PORT = "localhost", 1980
 
 class con(object):
-    def __init__(self):
-        
+    def __init__(self,sid,objtype):
+        self.sid=sid
+        self.objtype=objtype
         self.incomingq = Queue.Queue(10) #read from sserver
         self.outgoingq= Queue.Queue(10) #headed to server
         self.is_connected=False
@@ -28,8 +27,8 @@ class con(object):
         #send SuitSoftware version, first thing, size 16
         self.sock.send('lzr debug pygame')
         #send SID next
-        self.sock.send(struct.pack('q',SID))
-        self.sock.send('s')
+        self.sock.send(struct.pack('q',self.sid))
+        self.sock.send(self.objtype)
         self.w_thread = threading.Thread(target=self.write)
         self.w_thread.setDaemon(True)
         self.w_thread.start()
