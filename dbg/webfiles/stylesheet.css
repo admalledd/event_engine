@@ -10,23 +10,12 @@ padding:0px;
 margin-top:0px;
 }
 
-ul.nav
-{
-list-style-type:none;
-margin:0;
-padding:0;
-}
-li.nav
-{
-display:inline;
-}
-
 div.navbar{
 
 text-align:center;
 background-color:red; 
 margin: 0%;
-height: 5%
+height: 5%;
 
 }
 
@@ -34,7 +23,7 @@ div.optionbar{
 
 float:left;
 width:10%;
-height:95%;
+height:90%;
 background-color:blue;
 margin: 0%;
 text-align: center;
@@ -45,10 +34,16 @@ div.maincontent{
 float: left;
 background-color:green;
 width: 90%;
-height: 95%;
+height: 90%;
 margin: 0%;
 text-align: center;
 
+}
+div.statusbar{
+text-align:right;
+background-color:grey; 
+height: 95%;
+margin: 0%;
 }
 
 div.option1{

@@ -20,10 +20,22 @@ mimer = magic.Magic(mime=True)
 import fs.osfs
 webfiles = fs.osfs.OSFS(os.path.join(os.getcwd(),'webfiles'))
 
+debugdata = {} #debug data that holds everything that we do that needs persistance. (set to {} again to reset? does memory clear properly?)
+
 class MyHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         BaseHTTPRequestHandler.log_message(self, format, *args)
         
+    def send_html_header(self):
+        '''send the most common header: the html headers. done here in case we want to change the normal headers at any time.
+        scripts should normaly send headers with this, unless they are doing their own thing, at which point is why we allow 
+        a script to not call this and send its own headers.
+        
+        '''
+        self.send_response(200)
+        self.send_header('Content-type',    'text/html')
+        self.end_headers()
+            
     def realfile(self):
         rawdata = webfiles.getcontents(self.path) #if we are here we assume the file exists, therefor we can read the contents like this
         ##TODO: handle buffering so that we dont try to read a 4 gig file and choke on the RAM usage
@@ -35,13 +47,8 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type',mime)
         self.end_headers()
         self.wfile.write(rawdata)
-        
+    
     def pyfile(self):
-        if not self.posting:
-            #if we are posting data we leave everything up to the script (move to convieniance function and script must call it?)
-            self.send_response(200)#yes, we are forcing the use of these headers, might be better to have a normal convieniance function then...
-            self.send_header('Content-type',    'text/html')
-            self.end_headers()
         try:
             modual = imp.load_source('', webfiles.getsyspath(self.path))
             modual.main(self)
