@@ -5,7 +5,7 @@ web front end to the debug session data for the lazer tag server. has the capabi
 
 note that this is copied from an old dynamic webserver project, minimal cleaning has taken place. more is recomended.
 
-
+Past me is an idiot and future me is a condescending asshole.
 '''
 import os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -50,13 +50,16 @@ class MyHandler(BaseHTTPRequestHandler):
             modual = imp.load_source('', webfiles.getsyspath(self.path))
             modual.main(self)
         except:
-            self.send_error(500, 'Internal server error')
-            self.wfile.write('<HTML><BODY><PRE>\n\n')
-            self.wfile.write("Exception in user code:\n")
-            self.wfile.write(str('-'*60)+'\n\n')
-            traceback.print_exc(file=self.wfile)
-            self.wfile.write(str('-'*60)+'\n\n')
-            self.wfile.write('\n\n</HTML></BODY></PRE>\n')
+            self.send_error(500, 'Internal server error')#web and console
+            self.wfile.write('<HTML><BODY><PRE>\n\n')#web
+            self.wfile.write("Exception in user code:\n")#web
+            self.wfile.write(str('-'*60)+'\n\n')#web
+            print str('-'*60)#console
+            traceback.print_exc(file=self.wfile)#web
+            traceback.print_exc()#console
+            print str('-'*60)+'\n\n'#console
+            self.wfile.write(str('-'*60)+'\n\n')#web
+            self.wfile.write('\n\n</HTML></BODY></PRE>\n')#web
         
     def is_webfile(self,path=None):
         '''called only after the args have been parsed from self.path

@@ -44,7 +44,7 @@ function make_callback(id) {
     */
     return function(http) {
         if (http.readyState==4) {
-            status_update("callback for '" + id + "' called");
+            //status_update("callback for '" + id + "' called");
             document.getElementById(id).innerHTML=http.responseText;
             }
         }
