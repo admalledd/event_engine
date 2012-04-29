@@ -28,7 +28,7 @@ function auto_update() {
             
             else {
                 //the data sent does not match any plans that we have already placed, set the statusbar to this odd data
-                document.getElementById("statusbar").innerHTML=document.URL.split('#')[1];
+                document.getElementById("statusbar").innerHTML=http.responseText;
             }
         }
     }
@@ -37,4 +37,4 @@ function auto_update() {
     do_ajax_GET(path,callback);
     setTimeout("auto_update()",2500);
 }
-setTimeout("auto_update()",500); //example code for auto update function
+setTimeout("auto_update()",5000); //example code for auto update function

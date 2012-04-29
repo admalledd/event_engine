@@ -22,6 +22,7 @@ import lib.cfg
 #abs layer imports, used for the creation of objects and finding the obj list for the relevent items
 from . import suit
 from . import tile
+from . import dataacc
 import abs
 #dict for "objtype byte" to its class
 #note that all objects/clients share the same objects dictionary for ID --> netobj corelation
@@ -29,7 +30,7 @@ objtype = {\
           "s":suit.suit,#suits
           "t":tile.tile,#area tiles
           "g":(None,None),#gameobjects (turrets, targets etc) 
-          "d":(None,None)#data accessors
+          "d":dataacc.dataacc#data accessors
           }
 
 

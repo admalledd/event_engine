@@ -52,3 +52,5 @@ function make_callback(id) {
 function status_update(text) {
     document.getElementById("statusbar").innerHTML=text;
 }
+
+

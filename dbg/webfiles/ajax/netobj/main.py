@@ -27,6 +27,8 @@ buttons = '''<div class="option1" > <button type="button" onclick="netobj_update
 import cgi
 import json
 import pprint
+import Queue
+
 import net
 
 import __main__
@@ -36,19 +38,46 @@ def push(self):
     #called from auto_update.py
     
     #prep new options list based on the keys
-    netlist =['asdf<select name="netobj_select" onChange="netobj_update_data();>']
+    netlist =['<select onChange="netobj_update_data(this);">']
     for obj in __main__.debugdata['netobjs'].keys():
         netlist.append('<option>%s</option>'%obj)
-    netlist.append('</select>asdf')
+    netlist.append('</select>')
     netlist = '\n'.join(netlist)
     
+    #get current suit status, no matter what return, drop bad data with a error message if it occurs
+    #first: get the current debug data object
+    ##TODO::: get a setting from the settings dict that allows changing of the current debug object
+    if __main__.debugdata['netobjs'].has_key(1337) and __main__.debugdata['netobjs'][1337].objtype == 'd':
+        #we have the debug object, make the calls
+        dobj = __main__.debugdata['netobjs'][1337] #simplify typing of the name (in case we need to change it)
+        if __main__.debugdata['netobjs'].has_key('current'):
+            dobj.outgoingq.put(('sget',{
+                                        'oid':__main__.debugdata['netobjs']['current']
+                                    
+                                        }))
+            ##im terrible, i do not check the returned status and check that it is really mine...
+            try:
+                status = dobj.incomingq.get(True,2.5)[1]
+            except Queue.Empty:
+                status = "status not returned in timeout limit"
+
+        else:
+            status = "no current object selected"
+        
+        
+    else:
+        status = "no debug object (create one with ID=1337)"
     
-    jdata = {'netobjs':{'status':'<pre>'+pprint.pformat({'asdf':None})+'</pre>',#get the status of the last selected suit
+    
+    
+    
+    
+    jdata = {'netobjs':{'status':'<pre>'+pprint.pformat(status)+'</pre>',#get the status of the last selected suit
              'netlist':netlist
     }}
     
     #now we also push a new netobjs list
-    pprint.pprint(jdata)
+    ##pprint.pprint(jdata) debug line
     self.wfile.write(json.dumps(jdata))
     
 def main(self):
@@ -73,6 +102,7 @@ def main(self):
                 if len(objtype) > 1:
                     return #bail out, objtype was a illegal value
                 __main__.debugdata['netobjs'][oid] = net.con(oid,objtype)
+                __main__.debugdata['netobjs'][oid].connect()
             elif jdata.has_key('change_netobj'):
                 #select new netobj for viewing status of. currently just pprint the net.__dict__ until we get debug code server-side
                 __main__.debugdata['netobjs']['current'] = int(jdata['change_netobj'])

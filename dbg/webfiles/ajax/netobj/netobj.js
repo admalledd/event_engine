@@ -28,11 +28,11 @@ function netobj_stat_post(type){
     do_ajax_POST(type,"/ajax/netobj/main.py",make_callback("statusbar"));
 }
 
-function netobj_update_data(){
+function netobj_update_data(selform){
     //get the data from the drop down list
-    var selected_netobj = document.netobj_select.options[document.netobj_select.selectedIndex].value;
+    var selected_netobj = selform.options[selform.selectedIndex].value;
     status_update(selected_netobj);
     var jdata = new Object();
     jdata.change_netobj = selected_netobj;
-    do_ajax_POST(selected_netobj,"/ajax/netobj/main.py",make_callback("netobj_data"));
+    do_ajax_POST(jdata,"/ajax/netobj/main.py",make_callback("netobj_data"));
 }

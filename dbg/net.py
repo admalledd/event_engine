@@ -12,6 +12,8 @@ HOST, PORT = "localhost", 1980
 
 class con(object):
     def __init__(self,sid,objtype):
+        '''   TODO::: have incomingq tack a callback paramiter so that when data is recv'd we call that function with the data'''
+    
         self.sid=sid
         self.objtype=objtype
         self.incomingq = Queue.Queue(10) #read from sserver
@@ -66,9 +68,9 @@ class con(object):
                 data = ''.join(data)
             else:
                 data = self.sock.recv(content_len)
-            
             data=json.loads(data)
-            print data#what do we do with data that comes from the server?
+            self.incomingq.put((header,data))
+            
     def make_packet(self,action,data):
         '''
         this function is broken out so others beyond the writer can use it

@@ -35,7 +35,7 @@ def main(self):
         #default landing page, push the user to #main
         jdata={'layout_update':{
                                "maincontent": "main content PUSH updated using auto_update.js",
-                               "optionbar":webfiles.ajax.main.main.buttons,
+                               "optionbar":aj_main.buttons,
                                "newpath":"#main",
                                "reason":"landing page PUSH"
                                }

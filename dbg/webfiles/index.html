@@ -13,12 +13,29 @@
 <script type="text/javascript">
 //start by setting our common data that we need to change to for various pages
 
-
+function reset_view(){
+    //we have been requested to reload the content of the view we are in (f5 or first navigation to the page)
+    var path = window.location.hash.split('#')[1];
+    if (typeof path === "undefined" || path == "Main"){
+    //assume main landing view
+        set_view_to_main();
+    }
+    else if (path == "NetObjects"){
+        set_view_to_netobj();
+    }
+    else if (path == "Settings"){
+        set_view_to_settings();
+    }
+    else if (path == "Log"){
+        set_view_to_log();
+    }
+    
+}
 
 </script>
 </head>
 
-<body>
+<body onload="reset_view()">
 
 <div class="navbar">
     <a href="#main"       onclick="set_view_to_main()"     >Main</a>
@@ -27,6 +44,7 @@
     <a href="#Settings"   onclick="set_view_to_settings()" >Settings</a>
     <a href="#Log"        onclick="set_view_to_log()"      >Log</a>
     <a href="#Links"      onclick="return true;"           >Links</a>
+    <!-- also update reset_view() with the new view functions whenever this is updated-->
 </div>
 
 <div id="optionbar">
