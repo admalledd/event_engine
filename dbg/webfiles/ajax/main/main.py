@@ -4,6 +4,7 @@ buttons = '''<div class="option1" > <button type="button" onclick="test_POST()">
     <div class="option2" > <button type="button" onclick="test_GET()"> test GET  </button></div>
     <div class="option1"> option 3 </div>
     <div class="option2"> option 4 </div>'''
+
     
 import cgi
 import json

@@ -47,6 +47,7 @@ def push(self):
     #get current suit status, no matter what return, drop bad data with a error message if it occurs
     #first: get the current debug data object
     ##TODO::: get a setting from the settings dict that allows changing of the current debug object
+    ##TODO::: each use of gathering new data should never run into the chance of coliding with other code access
     if __main__.debugdata['netobjs'].has_key(1337) and __main__.debugdata['netobjs'][1337].objtype == 'd':
         #we have the debug object, make the calls
         dobj = __main__.debugdata['netobjs'][1337] #simplify typing of the name (in case we need to change it)
