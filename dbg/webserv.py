@@ -7,7 +7,10 @@ note that this is copied from an old dynamic webserver project, minimal cleaning
 
 Past me is an idiot and future me is a condescending asshole.
 '''
-import os
+import os,sys
+
+from SocketServer import ThreadingMixIn
+
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import imp
 import traceback
@@ -50,7 +53,7 @@ class MyHandler(BaseHTTPRequestHandler):
             modual = imp.load_source('', webfiles.getsyspath(self.path))
             modual.main(self)
         except:
-            self.send_error(500, 'Internal server error')#web and console
+            self.send_error(500, 'Internal dynamix server error')#web and console
             self.wfile.write('<HTML><BODY><PRE>\n\n')#web
             self.wfile.write("Exception in user code:\n")#web
             self.wfile.write(str('-'*60)+'\n\n')#web
@@ -76,7 +79,8 @@ class MyHandler(BaseHTTPRequestHandler):
                 #we have some url parsing to do, split that other stuff into raw data...
                 self.path,self.path_args = self.path.split('?',1)
                 ##todo: parse the args down even more into usable data chunks. ignore for now
-                
+            else:
+                self.path_args=''
                 
             if self.path.endswith('/'): #handle index of a directory with this
                 
@@ -102,11 +106,11 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.realfile()
                 return
                 
-            self.send_error(404,'File Not Found: %s' % self.path)
+            self.send_error(404,'File Not Found REPL fail: %s' % self.path)
             return
                 
         except IOError:
-            self.send_error(404,'File Not Found: %s' % self.path)
+            self.send_error(404,'File Not Found IOError: %s' % self.path)
      
 
     def do_POST(self):
@@ -122,18 +126,22 @@ class MyHandler(BaseHTTPRequestHandler):
                 return
             
         except :
-            traceback.print_exc(file=self.wfile)
             self.send_error(500, 'Server could not POST data to: %s'%self.path)
+            traceback.print_exc(file=self.wfile)
+            
         #fell through, unable to POST
-        self.send_error(404, 'File Not Found: %s'%self.path)
+        self.send_error(404, 'File Not Found POST error: %s'%self.path)
 PORT = 8081
 welcome='''\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 httpserver started on port: %i
 \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
 ''' % (PORT)
 
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
+
 def main():
-    server = HTTPServer(('', PORT), MyHandler)
+    server = ThreadingHTTPServer(('', PORT), MyHandler)
     print welcome
     server.serve_forever()
 if __name__ == '__main__':
