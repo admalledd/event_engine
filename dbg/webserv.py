@@ -53,14 +53,15 @@ class MyHandler(BaseHTTPRequestHandler):
             modual = imp.load_source('', webfiles.getsyspath(self.path))
             modual.main(self)
         except:
+            #print to console first in case of broken socket pipe
+            print str('-'*60)#console
+            traceback.print_exc()#console
+            print str('-'*60)+'\n\n'#console
             self.send_error(500, 'Internal dynamix server error')#web and console
             self.wfile.write('<HTML><BODY><PRE>\n\n')#web
             self.wfile.write("Exception in user code:\n")#web
             self.wfile.write(str('-'*60)+'\n\n')#web
-            print str('-'*60)#console
             traceback.print_exc(file=self.wfile)#web
-            traceback.print_exc()#console
-            print str('-'*60)+'\n\n'#console
             self.wfile.write(str('-'*60)+'\n\n')#web
             self.wfile.write('\n\n</HTML></BODY></PRE>\n')#web
         
@@ -138,7 +139,10 @@ httpserver started on port: %i
 ''' % (PORT)
 
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
-    pass
+    # Overrides SocketServer.ThreadingMixIn.daemon_threads
+    daemon_threads = True
+    # Overrides BaseHTTPServer.HTTPServer.allow_reuse_address
+    allow_reuse_address = True
 
 def main():
     server = ThreadingHTTPServer(('', PORT), MyHandler)
