@@ -1,7 +1,9 @@
 import time
 import imp
 import __main__
+import socket
 
+#use imp.load_source to force reloading of the code in this file making testing faster (no restarting)
 wscommon      = imp.load_source('', __main__.webfiles.getsyspath('/ws/wscommon.py'))
 
 def main(self):
@@ -21,7 +23,11 @@ def main(self):
         time.sleep(1)
     elif self.path_args == 'con2':
         #self.connection.settimeout(2.5)
-        print repr(self.connection.recv(128))
-        ws.send_data('con2 data gotten')
-    ws.send_data('',0x8)
+        try:
+            frame = ws.get_frame()
+            print frame
+            ws.send_data('con2 data gotten:%r'%frame.payload)
+        except socket.timeout:
+            print 'con2 timeout'
+    ws.close()
     print 'done with Socket'

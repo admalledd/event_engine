@@ -9,10 +9,12 @@
         s.onopen = function(e) { console.log("opened1"); }
         s.onclose = function(e) { console.log("closed1"); }
         s.onmessage = function(e) { console.log("got1: " + e.data); }
-        var s = new WebSocket("ws://localhost:8081/ws/test.py?con2");
-        s.onopen = function(e) { console.log("opened2"); }
-        s.onclose = function(e) { console.log("closed2"); }
-        s.onmessage = function(e) { console.log("got2: " + e.data); }
+        var ss = new WebSocket("ws://localhost:8081/ws/test.py?con2");
+        ss.onopen = function(e) { console.log("opened2"); 
+                                  ss.send('hello world');}
+        ss.onclose = function(e) { console.log("closed2"); }
+        ss.onmessage = function(e) { console.log("got2: " + e.data); }
+
       };
     </script>
   </head>
