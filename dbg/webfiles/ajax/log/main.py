@@ -16,10 +16,10 @@ def main(self):
     jdata = self.rfile.read(int(ctype))
     jdata = json.loads(jdata)
     
-    if jdata == u"get buttons":
+    if jdata == "get buttons":
         self.wfile.write(buttons)
     
     elif type(jdata) == dict:
         #we have more than the normal use, most likely we have button presses :D
-        if jdata.has_key('button'):
-            print jdata['button'] #placeholder, send the button to the server console
+        if 'button' in jdata:
+            print((jdata['button'])) #placeholder, send the button to the server console

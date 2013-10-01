@@ -1,7 +1,5 @@
 #import coms
-import threading
-import time
-import random
+import logging
 
 import lib
 import lib.cfg
@@ -13,7 +11,9 @@ import abs
 
 import games
 
-gametype=[{'running':False},None,None]
+import events
+
+
 def main():
     '''
     1:start servers
@@ -29,14 +29,11 @@ def main():
     
     abs.init()#start abstraction code, starts network server
     #suits and others should connect automatically. (maybe send UPD broadcast packet?)
-    ##TODO::: send broadcast packet saying server is up and running (if no error on ans.init())
+    ##TODO::: send broadcast packet saying server is up and running (if no error on abs.init())
     
-    #choose games, start with default games (later make them replaceable)
-    gametype[1] = games.default()
-    gametype[2] = games.default()
-    gametype[0]['running']=True
     while True:
-        time.sleep(1)#nothing to do in main code yet, all is in background threads
+        event = events.base.get()
+        logging.info(event)
     
 
 if __name__ == '__main__':

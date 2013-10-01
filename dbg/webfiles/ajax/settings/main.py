@@ -30,21 +30,21 @@ def main(self):
         jdata = self.rfile.read(int(length))
         jdata = json.loads(jdata)
         
-        if jdata == u"get buttons":
+        if jdata == "get buttons":
             self.wfile.write(buttons)
-        elif jdata == u"get form":
+        elif jdata == "get form":
             self.wfile.write(main_content.format(host=net.HOST,port=net.PORT,logname=logreader.logfile))
             
         elif type(jdata) == dict:
             #we have more than the normal use, most likely we have button presses :D
-            if jdata.has_key('button'):
-                print jdata['button'] #placeholder, send the button to the server console
+            if 'button' in jdata:
+                print((jdata['button'])) #placeholder, send the button to the server console
                 
-            if jdata.has_key('type') and jdata['type'] == u'post net form':
+            if 'type' in jdata and jdata['type'] == 'post net form':
                 #we have gotten a post from the client asking to update the server settings
                 net.HOST = jdata['host_ip']
                 net.PORT = int(jdata['host_port'])
                 logreader.logfile=jdata['logname']
             pprint.pprint(jdata,stream=self.wfile)
     else:
-        print ctype
+        print(ctype)

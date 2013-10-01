@@ -1,14 +1,14 @@
 import logging
 logger = logging.getLogger('abs.suit.server')
 
-import SocketServer
+import socketserver
 from lib import thread2 as threading
 import select
-import Queue
+import queue
 try: 
-    from cStringIO import StringIO as sio
+    from io import StringIO as sio
 except ImportError:
-    from StringIO import StringIO as sio
+    from io import StringIO as sio
 import traceback    
 import sys
 import struct
@@ -26,7 +26,7 @@ from . import dataacc
 import abs
 #dict for "objtype byte" to its class
 #note that all objects/clients share the same objects dictionary for ID --> netobj corelation
-objtype = {\
+objtype = {
           "s":suit.suit,#suits
           "t":tile.tile,#area tiles
           "g":(None,None),#gameobjects (turrets, targets etc) 
@@ -34,7 +34,7 @@ objtype = {\
           }
 
 
-class abs_con_handler(SocketServer.BaseRequestHandler):
+class abs_con_handler(socketserver.BaseRequestHandler):
     '''handle a reconnecting object, put new descriptor in the relevent connection dict, if the relevent list does not have the relevant OID create new.
     
     the interface that connects this to all other objects (eg the abs.suit.suit):
@@ -62,7 +62,7 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
                 logger.debug('removed connection from suit "%s"'%self.OID)
                 abs.objects[self.OID][1]=None
         finally:
-            sys.exc_traceback = None    # Help garbage collection?
+            sys.exc_info()[2] = None    # Help garbage collection?
             
     
     def setup(self):
@@ -90,8 +90,8 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
                      suit ID..........................:%s'%(self.client_address,self.suitversion,self.OID))
         
         #set up queue's
-        self.incomingq = Queue.Queue(10) #read from suit
-        self.outgoingq= Queue.Queue(10) #headed to suit
+        self.incomingq = queue.Queue(10) #read from suit
+        self.outgoingq= queue.Queue(10) #headed to suit
         
         
         #set timeout for network latency
@@ -188,7 +188,7 @@ class abs_con_handler(SocketServer.BaseRequestHandler):
         '''
         if len(action) !=4:
             raise Exception('action must be 4 chars.')
-        if not isinstance(data, basestring):
+        if not isinstance(data, str):
             data = json.dumps(data)
         header=struct.pack('I',len(data))+action
         return header+data
@@ -226,7 +226,12 @@ def init():
         finally:
             abs_server.server.close()
     #set up our server. doesnt start yet, only when abs.suit.init() is called
-    abs_server=SocketServer.ThreadingTCPServer((lib.cfg.main['abs_net_server']['host'],lib.cfg.main['abs_net_server'].as_int('port')), abs_con_handler)
+    abs_server=socketserver.ThreadingTCPServer(
+        (
+            lib.cfg.main['abs_net_server']['host'],
+            lib.cfg.main['abs_net_server'].getint('port')
+        ),
+        abs_con_handler)
     abs_server.daemon_threads = True
     abs_server_thread = threading.Thread(target=run_server)
     abs_server_thread.setDaemon(True)#start in new thread as to not hang the main thread in case we want console acsess (ipython?)

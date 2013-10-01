@@ -4,7 +4,7 @@ import struct
 
 import threading
 import select
-import Queue
+import queue
 import socket
 import string
 
@@ -16,8 +16,8 @@ class con(object):
     
         self.sid=sid
         self.objtype=objtype
-        self.incomingq = Queue.Queue(10) #read from sserver
-        self.outgoingq= Queue.Queue(10) #headed to server
+        self.incomingq = queue.Queue(10) #read from sserver
+        self.outgoingq= queue.Queue(10) #headed to server
         self.is_connected=False
         
     def connect(self):

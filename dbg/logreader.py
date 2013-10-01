@@ -37,7 +37,7 @@ class logreader(object):
                     time.sleep(0.1)    # Sleep briefly
                     continue
                 yield line
-            print "ending logreader"
+            print("ending logreader")
         try:
             logfile = pyfs.open(logfile)
             loglines = follow(logfile)

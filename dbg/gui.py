@@ -8,10 +8,10 @@ class Config(object):
     def __init__(self, options, *look_for):
         assertions = []
         for key in look_for:
-            if key[0] in options.keys(): exec('self.'+key[0]+' = options[\''+key[0]+'\']')
+            if key[0] in list(options.keys()): exec('self.'+key[0]+' = options[\''+key[0]+'\']')
             else: exec('self.'+key[0]+' = '+key[1])
             assertions.append(key[0])
-        for key in options.keys():
+        for key in list(options.keys()):
             if key not in assertions: raise ConfigError(key+' not expected as option')
 
 class text_box(object):
@@ -64,7 +64,7 @@ class text_box(object):
         
             if self.debug==True:
                 #print way too much info:letters per line (lpl), box width, and average letter size...
-                print 'main::txt_box_render::lpl:%s   box_size:%s   letsize:%s\n>>>"%s"'%(wrap,box_size,let_size,text)
+                print(('main::txt_box_render::lpl:%s   box_size:%s   letsize:%s\n>>>"%s"'%(wrap,box_size,let_size,text)))
             #use the textwrap modual (yay for bateries included...)
             self.textwraper.width=int(wrap)
             for num,line in enumerate(self.textwraper.wrap(text)):

@@ -1,4 +1,4 @@
-import lib.configobj as cj
+import configparser
 import lib.common
 
 import os
@@ -6,7 +6,8 @@ import os
 #normally, config's are added via the lib.cfg.add() function
 #however, here we must have the main cfg open early to set logfilename
 #just trust that we can use os.getcwd() for this...
-main=cj.ConfigObj(os.path.join(os.getcwd(),'config.ini'))
+main=configparser.ConfigParser()
+main.read(os.path.join(os.getcwd(),'config.ini'))
 
 def add(*path,**KWARGS):
     '''add cfg name to global name space within lib.cfg'''
@@ -15,7 +16,7 @@ def add(*path,**KWARGS):
     else:
         raise Error('must have name= in call')
     #is name a string?
-    if not isinstance(name,basestring):
+    if not isinstance(name,str):
         raise Error('name must be str')
     #is name "mostly" valid?
     if '.' in name:

@@ -76,25 +76,25 @@ def debug(value=None):
         
         
         
-print "current path    ::",  os.getcwd()
+print(("current path    ::",  os.getcwd()))
 #check if current directory has a folder with the same name as the datadir variable...
 if os.path.exists(os.path.normpath(os.path.realpath(os.path.join(os.getcwd(),datadir)))):
-    print 'current path works'
+    print("current path works")
     curdir = os.getcwd()
 #check one dir up from current...
 elif os.path.exists(os.path.normpath(os.path.realpath(os.path.join(os.getcwd(),'..',datadir)))):
     curdir = os.path.normpath(os.path.realpath(os.path.join(os.getcwd(),'..')))
-    print "changing tmp_path to::" , curdir
+    print(("changing tmp_path to::" , curdir))
 #we have a problem... try loading from where this file is (hopefully...)
 else:
-    print 'could not find data folder manually, trying dynamically...'
+    print("could not find data folder manually, trying dynamically...")
     curdir = os.path.dirname(os.path.abspath(__file__))
     if os.path.exists(os.path.normpath(os.path.realpath(os.path.join(curdir,'..',datadir)))):
         curdir = os.path.normpath(os.path.realpath(os.path.join(curdir,'..')))
     else:
-        print 'ERROR!! could not find main directory!'
+        print("ERROR!! could not find main directory!")
         raise SystemExit
-    print 'changing tmp_path to::' , curdir
+    print(('changing tmp_path to::' , curdir))
 
 #import here because this is after curdir is set
 import lib.cfg
@@ -118,7 +118,7 @@ def init(LOGFILENAME=None):
     logging.getLogger('').addHandler(console)
     
     #make a socket handler, use same as file format
-    streamer = logging.handlers.SocketHandler(lib.cfg.main['log_settings']['stream_host'], lib.cfg.main['log_settings'].as_int('stream_port'))
+    streamer = logging.handlers.SocketHandler(lib.cfg.main['log_settings']['stream_host'], lib.cfg.main['log_settings'].getint('stream_port'))
     streamer.setLevel(logging.DEBUG)
     streamer.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
     logging.getLogger('').addHandler(streamer)

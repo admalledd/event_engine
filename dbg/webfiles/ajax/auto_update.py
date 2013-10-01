@@ -46,7 +46,7 @@ def main(self):
         return
     elif self.path_args == 'NetObjects':
         #time to run the netobj PUSH update code:
-        print "running dyncode of Netobjects"
+        print("running dyncode of Netobjects")
         aj_netobj.push(self)
         return
     else:

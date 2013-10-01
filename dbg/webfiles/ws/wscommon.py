@@ -181,7 +181,7 @@ class websocket(object):
 
         
         if mask == 1:
-            masking_nonce = map(ord,self.receive_bytes(4))
+            masking_nonce = list(map(ord,self.receive_bytes(4)))
             
             raw_payload_bytes = self.receive_bytes(payload_length)
 
@@ -191,7 +191,7 @@ class websocket(object):
             result = array.array('B')
             result.fromstring(raw_payload_bytes)
 
-            for i in xrange(len(result)):
+            for i in range(len(result)):
                 result[i] ^= masking_nonce[_count]
                 _count = (_count + 1) % _mask_size
             bytes = result.tostring()

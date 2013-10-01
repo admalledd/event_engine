@@ -12,9 +12,9 @@ sys.path.insert(0,os.path.join(os.getcwd(),'..'))
 SID = 127
 
 #coustom imports
-from net import con
-from gui import text_box
-from logreader import logreader
+from .net import con
+from .gui import text_box
+from .logreader import logreader
 
 
 
@@ -56,18 +56,18 @@ def main():
                 pygame.quit()
                 return None
             elif event.type == MOUSEBUTTONDOWN and event.button==1:
-                print 'click %s'%(event.pos,)
+                print(('click %s'%(event.pos,)))
                 #connect/disconnect
                 if btn_connect.options.rect.collidepoint(event.pos):
                     if suit.is_connected:
-                        print "closing server connection"
+                        print("closing server connection")
                         suit.close()
                         log_reader.close()
                         suit.is_connected=False
                         btn_connect.options.text='connect to server'
                         btn_connect.render()
                     else:
-                        print "connecting"
+                        print("connecting")
                         suit.connect()
                         suit.outgoingq.put(('stup',{'arena':1}))
                         log_reader.open()

@@ -12,7 +12,7 @@ def main(self):
     
     jdata = self.rfile.read(int(ctype))
     jdata = json.loads(jdata)
-    if jdata == u"open log":
+    if jdata == "open log":
         __main__.debugdata['logreader']=logreader.logreader()
         if __main__.debugdata['logreader']._running:
             self.wfile.write("log already open")
@@ -20,7 +20,7 @@ def main(self):
             __main__.debugdata['logreader'].open()
             self.wfile.write("opened log")
     
-    elif jdata == u"close log":
+    elif jdata == "close log":
         #if 'logreader' not in __main__.debugdata:
         __main__.debugdata['logreader']=logreader.logreader()
         if not __main__.debugdata['logreader']._running:

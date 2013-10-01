@@ -9,13 +9,13 @@ Past me is an idiot and future me is a condescending asshole.
 '''
 import os,sys
 
-from SocketServer import ThreadingMixIn
+from socketserver import ThreadingMixIn
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import imp
 import traceback
 
-import magic #acess lib magic for MIME types
+from . import magic #acess lib magic for MIME types
 
 mimer = magic.Magic(mime=True)
 
@@ -54,9 +54,9 @@ class MyHandler(BaseHTTPRequestHandler):
             modual.main(self)
         except:
             #print to console first in case of broken socket pipe
-            print str('-'*60)#console
+            print((str('-'*60)))#console
             traceback.print_exc()#console
-            print str('-'*60)+'\n\n'#console
+            print((str('-'*60)+'\n\n'))#console
             self.send_error(500, 'Internal dynamix server error')#web and console
             self.wfile.write('<HTML><BODY><PRE>\n\n')#web
             self.wfile.write("Exception in user code:\n")#web
@@ -146,7 +146,7 @@ class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
 
 def main():
     server = ThreadingHTTPServer(('', PORT), MyHandler)
-    print welcome
+    print(welcome)
     server.serve_forever()
 if __name__ == '__main__':
     main()

@@ -25,9 +25,9 @@ def main(self):
         #self.connection.settimeout(2.5)
         try:
             frame = ws.get_frame()
-            print frame
+            print(frame)
             ws.send_data('con2 data gotten:%r'%frame.payload)
         except socket.timeout:
-            print 'con2 timeout'
+            print('con2 timeout')
     ws.close()
-    print 'done with Socket'
+    print('done with Socket')

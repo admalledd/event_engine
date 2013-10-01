@@ -27,7 +27,7 @@ buttons = '''<div class="option1" > <button type="button" onclick="netobj_update
 import cgi
 import json
 import pprint
-import Queue
+import queue
 
 import net
 
@@ -39,7 +39,7 @@ def push(self):
     
     #prep new options list based on the keys
     netlist =['<select onChange="netobj_update_data(this);">']
-    for obj in __main__.debugdata['netobjs'].keys():
+    for obj in list(__main__.debugdata['netobjs'].keys()):
         netlist.append('<option>%s</option>'%obj)
     netlist.append('</select>')
     netlist = '\n'.join(netlist)
@@ -48,10 +48,10 @@ def push(self):
     #first: get the current debug data object
     ##TODO::: get a setting from the settings dict that allows changing of the current debug object
     ##TODO::: each use of gathering new data should never run into the chance of coliding with other code access
-    if __main__.debugdata['netobjs'].has_key(1337) and __main__.debugdata['netobjs'][1337].objtype == 'd':
+    if 1337 in __main__.debugdata['netobjs'] and __main__.debugdata['netobjs'][1337].objtype == 'd':
         #we have the debug object, make the calls
         dobj = __main__.debugdata['netobjs'][1337] #simplify typing of the name (in case we need to change it)
-        if __main__.debugdata['netobjs'].has_key('current'):
+        if 'current' in __main__.debugdata['netobjs']:
             dobj.outgoingq.put(('sget',{
                                         'oid':__main__.debugdata['netobjs']['current']
                                     
@@ -59,7 +59,7 @@ def push(self):
             ##im terrible, i do not check the returned status and check that it is really mine...
             try:
                 status = dobj.incomingq.get(True,2.5)[1]
-            except Queue.Empty:
+            except queue.Empty:
                 status = "status not returned in timeout limit"
 
         else:
@@ -90,13 +90,13 @@ def main(self):
         self.end_headers()
         jdata = json.loads(self.rfile.read(int(length)))
         
-        if jdata == u"get buttons":
+        if jdata == "get buttons":
             self.wfile.write(buttons)
-        elif jdata == u"get form":
+        elif jdata == "get form":
             self.wfile.write(main_content.format(host=net.HOST,port=net.PORT))
         
         elif type(jdata) == dict:
-            if jdata.has_key('type') and jdata['type'] == u'newobj':
+            if 'type' in jdata and jdata['type'] == 'newobj':
                 #we have gotten a post from the client asking to make a new netobject
                 oid=int(jdata['oid'])
                 objtype=jdata['objtype']
@@ -104,7 +104,7 @@ def main(self):
                     return #bail out, objtype was a illegal value
                 __main__.debugdata['netobjs'][oid] = net.con(oid,objtype)
                 __main__.debugdata['netobjs'][oid].connect()
-            elif jdata.has_key('change_netobj'):
+            elif 'change_netobj' in jdata:
                 #select new netobj for viewing status of. currently just pprint the net.__dict__ until we get debug code server-side
                 __main__.debugdata['netobjs']['current'] = int(jdata['change_netobj'])
                 #write the current data so we dont wait on the push of data
@@ -114,4 +114,4 @@ def main(self):
             
         
     else:
-        print ctype
+        print(ctype)
