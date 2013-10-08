@@ -15,22 +15,24 @@ suits:: a dictionary of {SID:suit_obj}
 '''
 #std lib
 import logging
-logger = logging.getLogger('abs')
+logger = logging.getLogger('entities')
 
 #server libs
 import lib.cfg
 
 #abs layer
-from . import network
+from . import server
 
-objects={}
+#structure of entities: {ID<int>:[base.Entity(),server.con_handler()]}
+entities={}
+
 
 
 
 def init():
     '''start su_server thread, and watch thing-a-ma-jigs'''
-    network.init()
-    network.abs_server_thread.start()
-    logger.info('abs server started on port %s'%lib.cfg.main['abs_net_server'].getint('port'))
-
+    entities_dict = server.init()
+    server.server_thread.start()
+    logger.info('net server started on port %s'%lib.cfg.main['net_server'].getint('port'))
+    return entities_dict
 

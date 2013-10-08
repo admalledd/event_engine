@@ -4,5 +4,20 @@
 		{
 			"path": "./"
 		}
-	]
+	],
+    "build_systems":[
+    {
+        "name":"build_project",
+        "linux":
+        {
+            "cmd": ["gnome-terminal","-x",
+                    "${packages}/User/run_linux_program_sub",
+                    "${project_path}",
+                    "/home/admalledd/bin/pypy3",
+                    "${project_path}/main.py"]
+        }
+    }
+
+
+    ]
 }

@@ -1,7 +1,7 @@
 #absbase class file
 
 import logging
-logger = logging.getLogger('abs.absbase')
+logger = logging.getLogger('entities.base')
 from lib import thread2 as threading
 import time
 import json
@@ -9,12 +9,12 @@ import json
 
 import lib.common#for debug
 
-import abs
+import entities
 ##import loop to mainfile!! (way around this concept? move game loop to new file?)
 import __main__#for __main__.gametype which is a gametype object
 
 
-class absbase(object):
+class Entity(object):
     '''
     self.ID == object identification descriptor, each is unique.
     self.ID == netobj.OID
@@ -37,7 +37,6 @@ class absbase(object):
         'dcon':self.close_connection        
         }
         self.status={#json-able data structure with all relavent object data and game data, empty here in this code
-        'arena':0#int of what arena this object is in (should be updated from the client on connect, must not be zero for long :D)
         }
     def run_packet(self,obtype,short_func,data):
         '''it is up to this function to decide what function gets called for what

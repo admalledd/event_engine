@@ -76,7 +76,7 @@ def debug(value=None):
         
         
         
-print(("current path    ::",  os.getcwd()))
+print("current path    ::",  os.getcwd())
 #check if current directory has a folder with the same name as the datadir variable...
 if os.path.exists(os.path.normpath(os.path.realpath(os.path.join(os.getcwd(),datadir)))):
     print("current path works")

@@ -5,11 +5,11 @@ import pprint
 
 import lib.common#for debug
 
-from . import absbase
-import abs
+from . import base
+import entities
 
 
-class dataacc(absbase.absbase):
+class dataacc(base.Entity):
     '''
     self.ID == object identification descriptor, each suit is unique.
     self.ID == netobj.OID   aka:: abs.objects[self.ID][1].OID == self.ID
@@ -19,7 +19,7 @@ class dataacc(absbase.absbase):
     def __init__(self,ID):
         
         #initialize basic common things, including ID
-        absbase.absbase.__init__(self,ID)
+        super().__init__(ID)
         self.translation_codes.update({
                                         'sget':self.status_get
                                         })
@@ -37,7 +37,7 @@ class dataacc(absbase.absbase):
     def status_get(self,data):
         '''get the status dict of a object and return it as a pprint.format string'''
         
-        abs.objects[self.ID][1].outgoingq.put(('sgot',abs.objects[data['oid']][0].status))
+        entities.entities[self.ID][1].outgoingq.put(('sgot',abs.objects[data['oid']][0].status))
         
         
     
@@ -46,5 +46,5 @@ class dataacc(absbase.absbase):
         
         note that most if not all data accesor calls should be handeld here, they should not make it to the game code often if at all.
         '''
-        absbase.absbase.run_packet(self,'suit',short_func,data)
+        super().run_packet(self,'suit',short_func,data)
     

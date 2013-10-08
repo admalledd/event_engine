@@ -1,5 +1,5 @@
 import logging
-logger = logging.getLogger('abs.suit.server')
+logger = logging.getLogger('entities.server')
 
 import socketserver
 from lib import thread2 as threading
@@ -23,7 +23,7 @@ import lib.cfg
 from . import suit
 from . import tile
 from . import dataacc
-import abs
+import entities
 #dict for "objtype byte" to its class
 #note that all objects/clients share the same objects dictionary for ID --> netobj corelation
 objtype = {
@@ -34,7 +34,7 @@ objtype = {
           }
 
 
-class abs_con_handler(socketserver.BaseRequestHandler):
+class con_handler(socketserver.BaseRequestHandler):
     '''handle a reconnecting object, put new descriptor in the relevent connection dict, if the relevent list does not have the relevant OID create new.
     
     the interface that connects this to all other objects (eg the abs.suit.suit):
@@ -60,7 +60,7 @@ class abs_con_handler(socketserver.BaseRequestHandler):
             #look into possibly creating a dummy netobj that wont crash the other objects?
             if self.OID != None:
                 logger.debug('removed connection from suit "%s"'%self.OID)
-                abs.objects[self.OID][1]=None
+                entities.objects[self.OID][1]=None
         finally:
             sys.exc_info()[2] = None    # Help garbage collection?
             
@@ -126,7 +126,7 @@ class abs_con_handler(socketserver.BaseRequestHandler):
         '''always used to make refrences as weak as possible without weakref's
         returns the obj dict (meaning it is not actually a list!)
         '''
-        return abs.objects
+        return entities.entities
         
     def get_objclass(self):
         '''always used to make references as weak as possible without weakref's'''
@@ -134,7 +134,7 @@ class abs_con_handler(socketserver.BaseRequestHandler):
         
     def get_objinst(self):
         '''get the object instance for this net instance, we dont store the ref because we want to be weak incase of problems'''
-        return abs.objects[self.OID][0]
+        return entities.entities[self.OID][0]
         
     def close(self):
         self.write_thread.terminate()
@@ -210,28 +210,28 @@ class abs_con_handler(socketserver.BaseRequestHandler):
         traceback.print_exc(file=buff)
         if self.OID is not None:
             buff.write('OBJECT ID: %s\n'%self.OID)
-        logger.error('abs_network communication error! %s'%buff.getvalue())
+        logger.error('network communication error! %s'%buff.getvalue())
         buff.close()
         del buff#stupid GC hates me
         
 
-abs_server=None
-abs_server_thread=None
+server=None
+server_thread=None
 def init():
-    global abs_server
-    global abs_server_thread
+    global server
+    global server_thread
     def run_server():
         try:
-            abs_server.serve_forever()
+            server.serve_forever()
         finally:
-            abs_server.server.close()
+            server.server.close()
     #set up our server. doesnt start yet, only when abs.suit.init() is called
-    abs_server=socketserver.ThreadingTCPServer(
+    server=socketserver.ThreadingTCPServer(
         (
-            lib.cfg.main['abs_net_server']['host'],
-            lib.cfg.main['abs_net_server'].getint('port')
+            lib.cfg.main['net_server']['host'],
+            lib.cfg.main['net_server'].getint('port')
         ),
-        abs_con_handler)
-    abs_server.daemon_threads = True
-    abs_server_thread = threading.Thread(target=run_server)
-    abs_server_thread.setDaemon(True)#start in new thread as to not hang the main thread in case we want console acsess (ipython?)
+        con_handler)
+    server.daemon_threads = True
+    server_thread = threading.Thread(target=run_server)
+    server_thread.setDaemon(True)#start in new thread as to not hang the main thread in case we want console acsess (ipython?)

@@ -1,13 +1,13 @@
 import logging
-logger = logging.getLogger('abs.suit')
+logger = logging.getLogger('entities.suit')
 
 import lib.common#for debug
 
-from . import absbase
-import abs
+from . import base
+#import abs
 
 
-class suit(absbase.absbase):
+class suit(base.Entity):
     '''
     self.ID == suit identification descriptor, each suit is unique.
     self.ID == netobj.OID   aka:: abs.objects[self.ID][1].OID == self.ID
@@ -17,7 +17,7 @@ class suit(absbase.absbase):
     def __init__(self,ID):
         
         #initialize basic common things, including ID
-        absbase.absbase.__init__(self,ID)
+        super().__init__(ID)
         ##self.translation_codes.update({}) #unused
         
         self.status.update({#json-able data structure with all relavent suit data and game data
@@ -33,5 +33,5 @@ class suit(absbase.absbase):
     def run_packet(self,short_func,data):
         '''pass thinking off to the super class, but add in our obtype
         '''
-        absbase.absbase.run_packet(self,'suit',short_func,data)
+        super().run_packet(self,'suit',short_func,data)
     

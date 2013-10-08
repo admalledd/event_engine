@@ -7,7 +7,7 @@ import lib.common
 lib.common.init()
 #set debug here so that all later imports can use import-time redefines
 lib.common.debug(5)
-import abs
+import entities
 
 import games
 
@@ -24,12 +24,12 @@ def main():
     5:choose gametype
     6:pass events to gametype code
         gametype code overrides code from normal play via the lazerserver calling (in order) gametype code, then default code (default normally only does heartbeats)
-        gametype code inherits from abstract code from the abs.* overriding with its own functions
+        gametype code inherits from abstract code from the entities.* overriding with its own functions
     '''
     
-    abs.init()#start abstraction code, starts network server
+    ent_dict = entities.init()#starts network server and get in return a dict of any entities we will ever have
     #suits and others should connect automatically. (maybe send UPD broadcast packet?)
-    ##TODO::: send broadcast packet saying server is up and running (if no error on abs.init())
+    ##TODO::: send broadcast packet saying server is up and running (if no error on entities.init())
     
     while True:
         event = events.base.get()
