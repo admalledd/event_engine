@@ -12,8 +12,9 @@ import entities
 import games
 
 import events
-
-
+print(events.net_events.connect_event.__name__)
+import pdb;pdb.set_trace()
+raise SytemExit()
 def main():
     '''
     1:start servers

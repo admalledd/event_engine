@@ -8,31 +8,3 @@ import os
 #just trust that we can use os.getcwd() for this...
 main=configparser.ConfigParser()
 main.read(os.path.join(os.getcwd(),'config.ini'))
-
-def add(*path,**KWARGS):
-    '''add cfg name to global name space within lib.cfg'''
-    if 'name' in KWARGS:
-        name=KWARGS['name']
-    else:
-        raise Error('must have name= in call')
-    #is name a string?
-    if not isinstance(name,str):
-        raise Error('name must be str')
-    #is name "mostly" valid?
-    if '.' in name:
-        raise Error('name cant have a "." in it')
-    
-    ##todo: make more reliable from mistakes
-    #if (',','=','-','(',')','%','@','<','>','!','#') in name:
-    #    raise Error('invalid name for cfgobj')
-        
-    #get sub-path
-    file_name=os.path.join(*path)
-    #join with full path
-    file_name=os.path.join(lib.common.curdir,file_name)
-    
-    #add to modual as a usable name
-    globals()[name]=cj.ConfigObj(file_name)
-    
-    from lib import logger
-    logger.debug('%s config opened and loaded'%name)

@@ -1,9 +1,26 @@
+"""
+listeners={
+           "event_name":{
+                    priority:[Event_listener()] #list of listeners for this priority
+                    }
+            }
+"""
+
 import logging
 logger = logging.getLogger('event.base')
+from functools import wraps
 
 import queue
 
 event_queue = queue.Queue()
+
+EVENT_LOW=30
+EVENT_NORMAL=20
+EVENT_HIGH=10
+EVENT_HIGHEST=0
+
+listeners={}
+
 
 
 def put(event):
@@ -14,8 +31,39 @@ def put(event):
 def get():
     return event_queue.get()
 
+def event_listener(name=None,priority=EVENT_NORMAL):
+    ''' Event listening decorator for all listeners so that we can set
+    up all the queue links and calling orders.
+    '''
+
+    if name==None:
+        raise TypeError("event name cannot be None")
+    if not isinstance(priority,int) or priority<0:
+        raise TypeError("priority must be a int=>0")
+    if name not in listeners:
+        listeners[name]={}
+    if priority not in listeners[name]:
+        listeners[name][priority]=list()
+
+
+    #@wraps
+    def fn(clazz):
+        listeners[name][priority].append(clazz())
+        logger.debug('new listener on "%s" with priority "%s"'%(name,priority))
+        return clazz
+
+    return fn
+
 
 class Event:
     """Base event class, root of the tree for all events"""
     def __init__(self):
         pass
+
+class Event_listener:
+    """Base listener class, subclasses must be decorated with @event_listener to work
+    the __init__ cannot have arguments (@event_listener decorator inits for you, singleton) 
+    """
+    def run(self,event):
+        '''Default run for an event listener, should be overridden by subclasses'''
+        raise NotImplementedError() 
