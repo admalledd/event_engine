@@ -10,7 +10,7 @@
 
 from events.base import Event_listener,event_listener
 
-@event_listener("connent_event")
+@event_listener("connect_event")
 class listen_tester(Event_listener):
     """docstring for listen_tester"""
     def __init__(self):

@@ -48,13 +48,14 @@ def event_listener(name=None,priority=EVENT_NORMAL):
 
     #@wraps
     def fn(clazz):
-        listeners[name][priority].append(clazz())
-        logger.debug('new listener on "%s" with priority "%s"'%(name,priority))
-        return clazz
+        obj=clazz()
+        listeners[name][priority].append(obj)
+        logger.debug('new listener on "%s" with priority "%s":%s'%(name,priority,obj))
+        return obj
 
     return fn
 
-
+##TODO make this a meta class: add event to the event tree (to catch non-events?)
 class Event:
     """Base event class, root of the tree for all events"""
     def __init__(self):
