@@ -1,6 +1,6 @@
 #import coms
 import logging
-
+logger=logging.getLogger('main')
 import lib
 import lib.cfg
 import lib.common
@@ -36,6 +36,9 @@ def main():
     ##TODO::: send broadcast packet saying server is up and running (if no error on entities.init())
     
     lib.pluginloader.load_plugins()
+
+    logger.info(events.base.listeners)
+
     #while True:
     #    event = events.base.get()
     #    logging.info(event)

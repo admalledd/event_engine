@@ -27,6 +27,5 @@ def load_plugins():
     global plugins
     plugins=[]
     for plugin in get_plugins():
-        #logger.debug("loading plugin {plugin[name]} from {plugin[info][1]}".format(plugin=plugin))
         logger.debug('loading plugin "{plugin[name]}"'.format(plugin=plugin))
         plugins.append(load_plugin(plugin))
