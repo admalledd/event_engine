@@ -1,20 +1,15 @@
-import sys
-import os
-
 
 import pygame
 pygame.init()
 from pygame.locals import *
 
-sys.path.insert(0,os.path.join(os.getcwd(),'..'))
-
 #define early so that others can import it
 SID = 127
 
-#coustom imports
-from .net import con
-from .gui import text_box
-from .logreader import logreader
+
+from net import con
+from gui import text_box
+from logreader import logreader
 
 
 

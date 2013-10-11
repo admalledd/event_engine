@@ -1,7 +1,6 @@
-#import coms
 import logging
 logger=logging.getLogger('main')
-import lib
+
 import lib.cfg
 import lib.common
 lib.common.init()
@@ -11,8 +10,6 @@ import lib.pluginloader
 
 
 import entities
-
-import games
 
 import events
 
@@ -30,8 +27,8 @@ def main():
         gametype code overrides code from normal play via the lazerserver calling (in order) gametype code, then default code (default normally only does heartbeats)
         gametype code inherits from abstract code from the entities.* overriding with its own functions
     '''
-    
-    ent_dict = entities.init()#starts network server and get in return a dict of any entities we will ever have
+    events.init()
+    entities.init()#starts network server
     #suits and others should connect automatically. (maybe send UPD broadcast packet?)
     ##TODO::: send broadcast packet saying server is up and running (if no error on entities.init())
     
@@ -39,9 +36,10 @@ def main():
 
     logger.info(events.base.listeners)
 
-    #while True:
-    #    event = events.base.get()
-    #    logging.info(event)
+    while True:
+        event = events.base.get()
+
+        logger.info(event)
     
 
 if __name__ == '__main__':

@@ -1,14 +1,13 @@
 import logging
 logger = logging.getLogger('entities.server')
 
+
 import socketserver
-from lib import thread2 as threading
+
+
 import select
 import queue
-try: 
-    from io import StringIO as sio
-except ImportError:
-    from io import StringIO as sio
+from io import StringIO as sio
 import traceback    
 import sys
 import struct
@@ -18,20 +17,11 @@ import time
 
 #local
 import lib.cfg
+import threading
 
 #abs layer imports, used for the creation of objects and finding the obj list for the relevent items
-from . import suit
-from . import tile
-from . import dataacc
-import entities
-#dict for "objtype byte" to its class
-#note that all objects/clients share the same objects dictionary for ID --> netobj corelation
-objtype = {
-          "s":suit.suit,#suits
-          "t":tile.tile,#area tiles
-          "g":(None,None),#gameobjects (turrets, targets etc) 
-          "d":dataacc.dataacc#data accessors
-          }
+from .base import Entity
+
 
 
 class con_handler(socketserver.BaseRequestHandler):
@@ -60,9 +50,13 @@ class con_handler(socketserver.BaseRequestHandler):
             #look into possibly creating a dummy netobj that wont crash the other objects?
             if self.OID != None:
                 logger.debug('removed connection from suit "%s"'%self.OID)
-                entities.objects[self.OID][1]=None
+                self.server.entities_dict[self.OID][1]=None
         finally:
-            sys.exc_info()[2] = None    # Help garbage collection?
+            self.make_event({"name":"disconnect_event",
+                         "address":self.client_address,
+                         "version":self.entversion,
+                         "id":self.OID})
+
             
     
     def setup(self):
@@ -75,10 +69,10 @@ class con_handler(socketserver.BaseRequestHandler):
         if any problems occur with network code, please check both places due to this repeat that is difficult to remove
         '''
         #suit version: 16 char string representing version, start with 'lzr'
-        self.OID=None#start workable
-        self.suitversion=self.request.recv(16)
-        if not self.suitversion.startswith('lzr'):
-            raise Excption('connection not from suit to suit server!')
+        self.OID=None
+        self.entversion=self.request.recv(16)
+        if not self.entversion.startswith(b'lzr'):
+            raise Exception('connection not from suit to suit server!')
         
         #OID is the second thing sent over the wire
         self.OID=struct.unpack('q',self.request.recv(8))[0]
@@ -87,7 +81,7 @@ class con_handler(socketserver.BaseRequestHandler):
         
         logger.info('handling new suit connection from:%s\n \
                      suit software version............:%s\n \
-                     suit ID..........................:%s'%(self.client_address,self.suitversion,self.OID))
+                     suit ID..........................:%s'%(self.client_address,self.entversion,self.OID))
         
         #set up queue's
         self.incomingq = queue.Queue(10) #read from suit
@@ -96,17 +90,15 @@ class con_handler(socketserver.BaseRequestHandler):
         
         #set timeout for network latency
         self.request.settimeout(0.5)
+        self.run_handler=True
         
         #set up and start write thread
         self.write_thread = threading.Thread(target=self.writer)
         self.write_thread.setDaemon(True)
         self.write_thread.start()
-        
-        
-        
-        
+                
         if self.OID in self.get_objlist() and self.get_objlist()[self.OID][1] is not None:
-            logger.warn('new connection for %s is already connected, overwritting old with new'%self.OID)
+            logger.warn('new connection for %s is already connected, overwriting old with new'%self.OID)
             
             #as quickly as possible set up the new connection, after set up then we close the old connection
             #TODO:: find if an error in closing old will block/error the new connection
@@ -119,36 +111,41 @@ class con_handler(socketserver.BaseRequestHandler):
             self.get_objlist()[self.OID][1]=self
         else:
             logger.info('new netobj object being created for %s'%self.OID)
-            s=self.get_objclass()(self.OID)
+            s=Entity(self.OID)
             self.get_objlist()[self.OID]=[s,self]
+
+        #now we are clear to fire a "hey new connection event!"
+        self.make_event({"name":"connect_event",
+                         "address":self.client_address,
+                         "version":self.entversion,
+                         "id":self.OID})
+
+    def make_event(self,data):
+        self.get_objinst().run_packet('evnt',data)
             
     def get_objlist(self):
         '''always used to make refrences as weak as possible without weakref's
         returns the obj dict (meaning it is not actually a list!)
         '''
-        return entities.entities
-        
-    def get_objclass(self):
-        '''always used to make references as weak as possible without weakref's'''
-        return objtype[self.objtype]
+        return self.server.entities_dict
         
     def get_objinst(self):
         '''get the object instance for this net instance, we dont store the ref because we want to be weak incase of problems'''
-        return entities.entities[self.OID][0]
+        return self.server.entities_dict[self.OID][0]
         
     def close(self):
-        self.write_thread.terminate()
         self.run_handler=False
-        time.sleep(0.25)#wait for the handlers to close normaly, but we can force it as well...
+        time.sleep(0.25)#wait for the handlers to close normally, but we can force it as well...
         self.request.close()#and if the handler is still open, this kills it with socket errors
-        self.get_objlist()[self.OID][1]=None
+        self.get_objlist()[self.OID][1]=None #remove ourselves from the EDICT
     def handle(self):
-        self.run_handler=True
         while self.run_handler:
             readready,writeready,exceptionready = select.select([self.request],[],[],0.25)
             for streamobj in readready:
                 if streamobj == self.request:
                     self.handle_one()
+        self.close()
+
                     
     def handle_one(self):
         header = self.request.recv(8)
@@ -156,10 +153,10 @@ class con_handler(socketserver.BaseRequestHandler):
         #see description above for header layout
         short_func = header[4:]
         for ch in short_func:
-            if ch not in string.ascii_letters:
+            if chr(ch) not in string.ascii_letters:
                 raise Exception('received bad call function, must be ascii_letters. got:"%s"'%short_func)
         ##read data in 1024 byte chunks, but once under, use actual size
-        ##TODO: rate limmit the input, as is we read more and more data till we run out of ram. we need a max packet size and handler
+        ##TODO: rate limit the input, as is we read more and more data till we run out of ram. we need a max packet size and handler
         if content_len >1024:
             tcon = content_len
             data = []
@@ -170,8 +167,13 @@ class con_handler(socketserver.BaseRequestHandler):
             data = ''.join(data)
         else:
             data = self.request.recv(content_len)
+        data=data.decode("UTF-8")
         jdata=json.loads(data)#must always have json data, of none/invalid let loads die
-        #pass to for suit to read and act upon
+        
+        if short_func == b'dcon':
+            #dcon==disconnect request, do not pass up the layers, we handle that elsewhere...
+            self.run_handler = False
+            return
         self.get_objinst().run_packet(short_func,jdata)
         
     def make_packet(self,action,data):
@@ -196,11 +198,15 @@ class con_handler(socketserver.BaseRequestHandler):
     def writer(self):
         '''eats things from the outgoing queue.
         format of outgoing data: tuple(action,jsonabledata)'''
-        while True:
-            short_func,data=self.outgoingq.get()
+        while self.run_handler:
+            try:
+                short_func,data=self.outgoingq.get(5)
+            except:
+                continue
             packet=self.make_packet(short_func,data)
             ##todo::: add to stack for reliability the logging of all data out
             self.request.sendall(packet)
+        logger.warn("write thread closing")
     def finnish(self):
         logger.warn('OBJECT %s requested connection closed.'%self.OID)
         
@@ -234,4 +240,6 @@ def init():
         con_handler)
     server.daemon_threads = True
     server_thread = threading.Thread(target=run_server)
-    server_thread.setDaemon(True)#start in new thread as to not hang the main thread in case we want console acsess (ipython?)
+    server_thread.setDaemon(True)
+    server.entities_dict={}
+    return server.entities_dict

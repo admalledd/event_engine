@@ -7,6 +7,7 @@ import select
 import queue
 import socket
 import string
+import time
 
 HOST, PORT = "localhost", 1980
 
@@ -27,7 +28,7 @@ class con(object):
         # Connect to server and send data
         self.sock.connect((HOST, PORT))
         #send SuitSoftware version, first thing, size 16
-        self.sock.send('lzr debug pygame')
+        self.sock.send(b'lzr debug pygame')
         #send SID next
         self.sock.send(struct.pack('q',self.sid))
         self.sock.send(self.objtype)
@@ -41,16 +42,18 @@ class con(object):
         self.is_connected=True
         
     def close(self):
-        self.outgoingq.put(('dcon',{}))
+        self.outgoingq.put((b'dcon',{}))
+        self.is_connected=False
         time.sleep(0.25)
         self.sock.close()
-        self.is_connected=False
+        
         
     def handle(self):
         while True:
             header = self.sock.recv(8)
-            #enable if header data is in question. remember how it is packed!
-            ##print repr(header)
+            if len(header) < 8 and not self.is_connected:
+                return #we disconnected
+                
             content_len = struct.unpack('I',header[:4])[0]
             #see description above for header layout
             short_func = header[4:]
@@ -89,7 +92,7 @@ class con(object):
         header=struct.pack('I',len(data))+action
         #remove if debuging network data
         ##print (header,data)
-        return header+data
+        return header+data.encode('latin-1')
         
     def write(self):
         '''eats things from the outgoing queue.

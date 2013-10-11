@@ -8,7 +8,7 @@ listeners={
 
 import logging
 logger = logging.getLogger('event.base')
-from functools import wraps
+import importlib
 
 import queue
 
@@ -20,13 +20,11 @@ EVENT_HIGH=10
 EVENT_HIGHEST=0
 
 listeners={}
+events={}
 
 
 
 def put(event):
-    if not isinstance(event,Event):
-        raise TypeError("event %r not a child of <events.base.Event>"%event)
-    logger.debug(event)
     event_queue.put(event)
 def get():
     return event_queue.get()
@@ -46,8 +44,6 @@ def event_listener(name=None,priority=EVENT_NORMAL):
     if priority not in listeners[name]:
         listeners[name][priority]=list()
 
-
-    #@wraps
     def fn(clazz):
         obj=clazz()
         listeners[name][priority].append(obj)
@@ -56,19 +52,29 @@ def event_listener(name=None,priority=EVENT_NORMAL):
 
     return fn
 
-##TODO make this a meta class: add event to the event tree (to catch non-events?)
-class Event:
-    """Base event class, root of the tree for all events"""
-    
-    # def __new__(cls):
-    #     print(dir(cls),cls)
-    #     return cls
-    def __init__(self,class_name,bases,namespace):
+class Event(type):
+    """Base event metaclass, root of the tree for all events"""
+    def __new__(cls,class_name,bases,namespace):
+        #bases= list(bases)
+        #bases.append("events.base.Event")
+        logger.warn((cls,class_name,bases,namespace))
         if class_name not in listeners:
             listeners[class_name]={}
         else:
-            logger.warn('event "%s" already in cached event tree, duped event? or out-of order loading?'%class_name)
-        pass
+            logger.warn('event "%s" already in cached listeners tree, duped event? or out-of order loading?'%class_name)
+        if class_name in events:
+            logger.severe("ERROR: multiple events of the same name in event tree!")
+        else:
+            events[class_name] = namespace['__module__']
+
+        return type.__new__(cls,class_name,bases,namespace)
+            
+def init():
+    for event,mname in events.items():
+        mod = importlib.import_module(mname)
+        clazz = getattr(mod, event)
+        events[event] = clazz
+    logger.warn(events)
 
 class Event_listener:
     """Base listener class, subclasses must be decorated with @event_listener to work
