@@ -3,9 +3,7 @@ logger=logging.getLogger('plugins.example_listener')
 
 from events.base import Event_listener,event_listener
 
-#TODO: submodle imports!
-#import plugins.example_listener.submodule
-#from . import submodle
+from . import submodule
 
 @event_listener("connect_event")
 class listen_tester(Event_listener):

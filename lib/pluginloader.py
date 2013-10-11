@@ -1,7 +1,7 @@
 import logging
 logger=logging.getLogger('lib.pluginloader')
 
-import imp
+import importlib
 import os
 
 import fs.osfs
@@ -16,11 +16,12 @@ def get_plugins():
     for location in possibleplugins:
         if not PluginFolder.isdir(location) or not MainModule + ".py" in PluginFolder.listdir(location):
             continue
-        info = imp.find_module(MainModule, [PluginFolder.getsyspath(location)])
-        yield {"name": location, "info": info}
+        if location.endswith(".py"):
+            location=os.path.splitext(location)[0]
+        yield {"name": "plugins.%s"%location}
 
 def load_plugin(plugin):
-    return imp.load_module("plugins.%s"%plugin['name'], *plugin["info"])
+    return importlib.import_module("%s"%plugin['name'])
 
 def load_plugins():
     global plugins
@@ -28,4 +29,4 @@ def load_plugins():
     for plugin in get_plugins():
         #logger.debug("loading plugin {plugin[name]} from {plugin[info][1]}".format(plugin=plugin))
         logger.debug('loading plugin "{plugin[name]}"'.format(plugin=plugin))
-        plugins.append(imp.load_module("plugins.%s"%plugin['name'], *plugin["info"]))
+        plugins.append(load_plugin(plugin))
