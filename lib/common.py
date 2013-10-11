@@ -13,7 +13,8 @@ set_dir code doc:::
 import os
 import logging
 import logging.handlers
-from lib.decorators import disabled,enabled
+from . import log_color
+from .decorators import disabled,enabled
 import lib
 
 
@@ -111,7 +112,10 @@ def init(LOGFILENAME=None):
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
     # set a format which is simpler for console use
-    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    ##formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    #$COLOR%(levelname)s $RESET %(asctime)s $BOLD$COLOR%(name)s$RESET %(message)s
+    formatter = log_color.ColorFormatter("[$BOLD%(name)-12s$RESET][$COLOR%(levelname)-8s$RESET]  $COLOR%(message)s$RESET")
+
     # tell the handler to use this format
     console.setFormatter(formatter)
     # add the handler to the root logger
@@ -120,7 +124,7 @@ def init(LOGFILENAME=None):
     #make a socket handler, use same as file format
     streamer = logging.handlers.SocketHandler(lib.cfg.main['log_settings']['stream_host'], lib.cfg.main['log_settings'].getint('stream_port'))
     streamer.setLevel(logging.DEBUG)
-    streamer.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
+    streamer.setFormatter(logging.Formatter('%(asctime)s [%(name)-12s][%(levelname)-8s] %(message)s'))
     logging.getLogger('').addHandler(streamer)
     
     lib.logger = logging.getLogger('lib')

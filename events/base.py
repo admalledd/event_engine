@@ -42,6 +42,7 @@ def event_listener(name=None,priority=EVENT_NORMAL):
         raise TypeError("priority must be a int=>0")
     if name not in listeners:
         listeners[name]={}
+        logger.warn('event "%s" not in cached event tree, might be ignored?'%name)
     if priority not in listeners[name]:
         listeners[name][priority]=list()
 
@@ -50,7 +51,7 @@ def event_listener(name=None,priority=EVENT_NORMAL):
     def fn(clazz):
         obj=clazz()
         listeners[name][priority].append(obj)
-        logger.debug('new listener on "%s" with priority "%s":%s'%(name,priority,obj))
+        logger.debug('new listener on "%s" with priority "%s": "%s.%s()"'%(name,priority,clazz.__module__,clazz.__name__))
         return obj
 
     return fn
@@ -58,7 +59,15 @@ def event_listener(name=None,priority=EVENT_NORMAL):
 ##TODO make this a meta class: add event to the event tree (to catch non-events?)
 class Event:
     """Base event class, root of the tree for all events"""
-    def __init__(self):
+    
+    # def __new__(cls):
+    #     print(dir(cls),cls)
+    #     return cls
+    def __init__(self,class_name,bases,namespace):
+        if class_name not in listeners:
+            listeners[class_name]={}
+        else:
+            logger.warn('event "%s" already in cached event tree, duped event? or out-of order loading?'%class_name)
         pass
 
 class Event_listener:

@@ -7,15 +7,16 @@ import lib.common
 lib.common.init()
 #set debug here so that all later imports can use import-time redefines
 lib.common.debug(5)
+import lib.pluginloader
+
+
 import entities
 
 import games
 
 import events
-print(events.net.connect_event.__name__)
+
 #import ipdb;ipdb.set_trace()
-import IPython;IPython.embed()
-import sys;sys.exit()
 
 def main():
     '''
@@ -34,9 +35,10 @@ def main():
     #suits and others should connect automatically. (maybe send UPD broadcast packet?)
     ##TODO::: send broadcast packet saying server is up and running (if no error on entities.init())
     
-    while True:
-        event = events.base.get()
-        logging.info(event)
+    lib.pluginloader.load_plugins()
+    #while True:
+    #    event = events.base.get()
+    #    logging.info(event)
     
 
 if __name__ == '__main__':
