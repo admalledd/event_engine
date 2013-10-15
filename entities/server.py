@@ -151,9 +151,9 @@ class con_handler(socketserver.BaseRequestHandler):
         header = self.request.recv(8)
         content_len = struct.unpack('I',header[:4])[0]
         #see description above for header layout
-        short_func = header[4:]
+        short_func = header[4:].decode("latin-1")
         for ch in short_func:
-            if chr(ch) not in string.ascii_letters:
+            if ch not in string.ascii_letters:
                 raise Exception('received bad call function, must be ascii_letters. got:"%s"'%short_func)
         ##read data in 1024 byte chunks, but once under, use actual size
         ##TODO: rate limit the input, as is we read more and more data till we run out of ram. we need a max packet size and handler
@@ -206,7 +206,6 @@ class con_handler(socketserver.BaseRequestHandler):
             packet=self.make_packet(short_func,data)
             ##todo::: add to stack for reliability the logging of all data out
             self.request.sendall(packet)
-        logger.warn("write thread closing")
     def finnish(self):
         logger.warn('OBJECT %s requested connection closed.'%self.OID)
         

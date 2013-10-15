@@ -1,5 +1,7 @@
 import logging
 logger=logging.getLogger('main')
+import traceback
+import sys
 
 import lib.cfg
 import lib.common
@@ -35,11 +37,19 @@ def main():
     lib.pluginloader.load_plugins()
 
     logger.info(events.base.listeners)
-
     while True:
-        event = events.base.get()
-
-        logger.info(event)
+        try:
+            event = events.base.get()
+            priorities=events.listeners[event.name].keys()
+            for priority in sorted(priorities):
+                for listener in events.listeners[event.name][priority]:
+                    listener.run(event)
+        except KeyboardInterrupt:
+            logger.info("server quit requested!")
+            lib.pluginloader.unload_plugins()
+            return
+        except Exception as e:
+            logger.critical("error handling event %s:%s"%(event.name,traceback.format_tb(e)))
     
 
 if __name__ == '__main__':

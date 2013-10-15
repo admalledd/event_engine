@@ -2,7 +2,8 @@ import logging
 logger=logging.getLogger('lib.pluginloader')
 
 import importlib
-import os
+import os,sys
+import traceback
 
 import fs.osfs
 
@@ -29,3 +30,15 @@ def load_plugins():
     for plugin in get_plugins():
         logger.debug('loading plugin "{plugin[name]}"'.format(plugin=plugin))
         plugins.append(load_plugin(plugin))
+
+def unload_plugins():
+    global plugins
+    for plugin in [p for p in sys.modules.keys() if p.startswith('plugins')]:
+        try:
+            p = sys.modules[plugin]
+            if hasattr(p,"unload"):
+                p.unload()
+        except Exception as e:
+            traceback.print_exc()
+            logger.critical("plugin '%s' failed unloading:%s"%(plugin,traceback.format_tb(e)))
+        del sys.modules[plugin]

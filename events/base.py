@@ -53,11 +53,12 @@ def event_listener(name=None,priority=EVENT_NORMAL):
     return fn
 
 class Event(type):
-    """Base event metaclass, root of the tree for all events"""
+    """Base event metaclass, root of the tree for all events.
+    injects the _sub_event so that we also act like a normal parent"""
     def __new__(cls,class_name,bases,namespace):
-        #bases= list(bases)
-        #bases.append("events.base.Event")
-        logger.warn((cls,class_name,bases,namespace))
+        bases= list(bases)
+        bases.append(_event_sub)
+        #logger.debug((cls,class_name,bases,namespace))
         if class_name not in listeners:
             listeners[class_name]={}
         else:
@@ -66,8 +67,15 @@ class Event(type):
             logger.severe("ERROR: multiple events of the same name in event tree!")
         else:
             events[class_name] = namespace['__module__']
-
         return type.__new__(cls,class_name,bases,namespace)
+
+class _event_sub:
+    '''The true base class for events, here are all the default functions ect ect
+    most will raise NotImplementedError
+
+    '''
+    def __init__(self,kwargs):
+        raise NotImplementedError("this class did not define a init function to parse the args!")
             
 def init():
     for event,mname in events.items():
