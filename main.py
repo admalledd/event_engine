@@ -39,6 +39,7 @@ def main():
     logger.info(events.base.listeners)
     while True:
         try:
+
             event = events.base.get()
             priorities=events.listeners[event.name].keys()
             for priority in sorted(priorities):
@@ -49,7 +50,7 @@ def main():
             lib.pluginloader.unload_plugins()
             return
         except Exception as e:
-            logger.critical("error handling event %s:%s"%(event.name,traceback.format_tb(e)))
+            logger.critical("error handling event %s:\n%s"%(event.name,traceback.format_exc()))
     
 
 if __name__ == '__main__':

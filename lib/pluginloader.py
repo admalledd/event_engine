@@ -28,7 +28,7 @@ def load_plugins():
     global plugins
     plugins=[]
     for plugin in get_plugins():
-        logger.debug('loading plugin "{plugin[name]}"'.format(plugin=plugin))
+        logger.info('loading plugin "{plugin[name]}"'.format(plugin=plugin))
         plugins.append(load_plugin(plugin))
 
 def unload_plugins():
@@ -39,6 +39,5 @@ def unload_plugins():
             if hasattr(p,"unload"):
                 p.unload()
         except Exception as e:
-            traceback.print_exc()
-            logger.critical("plugin '%s' failed unloading:%s"%(plugin,traceback.format_tb(e)))
+            logger.critical("plugin '%s' failed unloading:%s"%(plugin,traceback.format_exc()))
         del sys.modules[plugin]

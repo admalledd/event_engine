@@ -16,7 +16,7 @@ class con(object):
         '''   TODO::: have incomingq tack a callback paramiter so that when data is recv'd we call that function with the data'''
     
         self.sid=sid
-        self.objtype=objtype
+        self.objtype=objtype.encode('ascii')
         self.incomingq = queue.Queue(10) #read from sserver
         self.outgoingq= queue.Queue(10) #headed to server
         self.is_connected=False
@@ -42,7 +42,7 @@ class con(object):
         self.is_connected=True
         
     def close(self):
-        self.outgoingq.put((b'dcon',{}))
+        self.outgoingq.put(('dcon',{}))
         self.is_connected=False
         time.sleep(0.25)
         self.sock.close()
@@ -56,7 +56,7 @@ class con(object):
                 
             content_len = struct.unpack('I',header[:4])[0]
             #see description above for header layout
-            short_func = header[4:]
+            short_func = header[4:].decode("ascii")
             for ch in short_func:
                 if ch not in string.ascii_letters:
                     raise Exception('received bad call function, must be ascii_letters. got:"%s"'%short_func)
@@ -71,7 +71,7 @@ class con(object):
                 data = ''.join(data)
             else:
                 data = self.sock.recv(content_len)
-            data=json.loads(data)
+            data=json.loads(data.decode('UTF-8'))
             self.incomingq.put((header,data))
             
     def make_packet(self,action,data):
@@ -89,10 +89,11 @@ class con(object):
         if len(action) !=4:
             raise Exception('action must be 4 chars.')
         data = json.dumps(data)
-        header=struct.pack('I',len(data))+action
+        header=struct.pack('I',len(data))+action.encode('ascii')
         #remove if debuging network data
         ##print (header,data)
-        return header+data.encode('latin-1')
+
+        return header+data.encode('ascii')
         
     def write(self):
         '''eats things from the outgoing queue.

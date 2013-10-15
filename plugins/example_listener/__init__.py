@@ -7,7 +7,6 @@ from . import submodule
 
 def unload():
     logger.debug("unloading...")
-    1/0
 
 @event_listener("connect_event")
 class listen_tester(Event_listener):

@@ -3,7 +3,6 @@
 import logging
 logger = logging.getLogger('entities.base')
 import time
-import json
 
 
 import lib.common#for debug
@@ -54,7 +53,7 @@ class Entity(object):
             logger.error('packet unable to be run ! %s'%(str((self.ID,short_func,data))))
     def send_packet(self,short_func,data):
         '''Queue up a packet to be sent back across the network'''
-        entities.entities[self.ID][1].outgoingq.put((short_func,json.dumps(data)))
+        entities.get_netobj(self.ID).outgoingq.put((short_func,data))
 
     def ping(self,data):
         '''object ping'd the server, return pong and any data exactly as it was sent'''
@@ -87,7 +86,10 @@ class Entity(object):
         if data['name'] not in events.base.events:
             logger.critical('event "%s" tried to fire but not found in event tree!'%data['name'])
             return
+        data['id']=self.ID
+
         event=events.base.events[data['name']](data)
+        event.entity=self
         events.put(event)
 
         

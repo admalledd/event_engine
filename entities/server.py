@@ -22,7 +22,7 @@ import threading
 #abs layer imports, used for the creation of objects and finding the obj list for the relevent items
 from .base import Entity
 
-
+from . import get_entity,get_netobj,close_netobj,set_netobj,entities
 
 class con_handler(socketserver.BaseRequestHandler):
     '''handle a reconnecting object, put new descriptor in the relevent connection dict, if the relevent list does not have the relevant OID create new.
@@ -50,7 +50,7 @@ class con_handler(socketserver.BaseRequestHandler):
             #look into possibly creating a dummy netobj that wont crash the other objects?
             if self.OID != None:
                 logger.debug('removed connection from suit "%s"'%self.OID)
-                self.server.entities_dict[self.OID][1]=None
+                entities[self.OID][1]=None
         finally:
             self.make_event({"name":"disconnect_event",
                          "address":self.client_address,
@@ -97,22 +97,20 @@ class con_handler(socketserver.BaseRequestHandler):
         self.write_thread.setDaemon(True)
         self.write_thread.start()
                 
-        if self.OID in self.get_objlist() and self.get_objlist()[self.OID][1] is not None:
+        if self.OID in entities and get_netobj(self.OID) is not None:
             logger.warn('new connection for %s is already connected, overwriting old with new'%self.OID)
             
-            #as quickly as possible set up the new connection, after set up then we close the old connection
             #TODO:: find if an error in closing old will block/error the new connection
-            old_conn=self.get_objlist()[self.OID][1]
-            old_conn.close()
-            self.get_objlist()[self.OID][1]=self
+            close_netobj(self.OID)
+            set_netobj(self)
             
-        elif self.OID in self.get_objlist() and self.get_objlist()[self.OID][1] is None:
+        elif self.OID in entities and get_netobj(self.OID) is None:
             logger.warn('re-establishing closed connection from %s'%self.OID)
-            self.get_objlist()[self.OID][1]=self
+            set_netobj(self)
         else:
             logger.info('new netobj object being created for %s'%self.OID)
             s=Entity(self.OID)
-            self.get_objlist()[self.OID]=[s,self]
+            entities[self.OID]=[s,self]
 
         #now we are clear to fire a "hey new connection event!"
         self.make_event({"name":"connect_event",
@@ -121,37 +119,27 @@ class con_handler(socketserver.BaseRequestHandler):
                          "id":self.OID})
 
     def make_event(self,data):
-        self.get_objinst().run_packet('evnt',data)
+        get_entity(self.OID).run_packet('evnt',data)
             
-    def get_objlist(self):
-        '''always used to make refrences as weak as possible without weakref's
-        returns the obj dict (meaning it is not actually a list!)
-        '''
-        return self.server.entities_dict
-        
-    def get_objinst(self):
-        '''get the object instance for this net instance, we dont store the ref because we want to be weak incase of problems'''
-        return self.server.entities_dict[self.OID][0]
-        
     def close(self):
         self.run_handler=False
-        time.sleep(0.25)#wait for the handlers to close normally, but we can force it as well...
+        time.sleep(0.30)#wait for the handlers to close normally, but we can force it as well...
         self.request.close()#and if the handler is still open, this kills it with socket errors
-        self.get_objlist()[self.OID][1]=None #remove ourselves from the EDICT
+        
     def handle(self):
         while self.run_handler:
             readready,writeready,exceptionready = select.select([self.request],[],[],0.25)
             for streamobj in readready:
                 if streamobj == self.request:
                     self.handle_one()
-        self.close()
+        close_netobj(self.OID)
 
                     
     def handle_one(self):
         header = self.request.recv(8)
         content_len = struct.unpack('I',header[:4])[0]
         #see description above for header layout
-        short_func = header[4:].decode("latin-1")
+        short_func = header[4:].decode("ascii")
         for ch in short_func:
             if ch not in string.ascii_letters:
                 raise Exception('received bad call function, must be ascii_letters. got:"%s"'%short_func)
@@ -174,7 +162,7 @@ class con_handler(socketserver.BaseRequestHandler):
             #dcon==disconnect request, do not pass up the layers, we handle that elsewhere...
             self.run_handler = False
             return
-        self.get_objinst().run_packet(short_func,jdata)
+        get_entity(self.OID).run_packet(short_func,jdata)
         
     def make_packet(self,action,data):
         '''
@@ -190,10 +178,9 @@ class con_handler(socketserver.BaseRequestHandler):
         '''
         if len(action) !=4:
             raise Exception('action must be 4 chars.')
-        if not isinstance(data, str):
-            data = json.dumps(data)
-        header=struct.pack('I',len(data))+action
-        return header+data
+        data = json.dumps(data,skipkeys=True,default=lambda o:str(o))
+        header=struct.pack('I',len(data))+action.encode('ascii')
+        return header+data.encode('ascii')
     
     def writer(self):
         '''eats things from the outgoing queue.
@@ -240,5 +227,3 @@ def init():
     server.daemon_threads = True
     server_thread = threading.Thread(target=run_server)
     server_thread.setDaemon(True)
-    server.entities_dict={}
-    return server.entities_dict

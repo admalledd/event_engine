@@ -75,14 +75,18 @@ class _event_sub:
 
     '''
     def __init__(self,kwargs):
-        raise NotImplementedError("this class did not define a init function to parse the args!")
+        self.kwargs=kwargs
+        d={}
+        d.update(self.__dict__)
+        d.update(kwargs)
+        self.__dict__=d
             
 def init():
     for event,mname in events.items():
         mod = importlib.import_module(mname)
         clazz = getattr(mod, event)
         events[event] = clazz
-    logger.warn(events)
+    logger.debug("Registered events:%s"%events.keys())
 
 class Event_listener:
     """Base listener class, subclasses must be decorated with @event_listener to work
