@@ -4,10 +4,13 @@ logger=logging.getLogger('lib.pluginloader')
 import importlib
 import os,sys
 import traceback
+import inspect
 
 import fs.osfs
 
 import lib.common
+
+import events
 
 PluginFolder = fs.osfs.OSFS(os.path.join(lib.common.curdir,"plugins"))
 MainModule = "__init__"
@@ -24,12 +27,28 @@ def get_plugins():
 def load_plugin(plugin):
     return importlib.import_module("%s"%plugin['name'])
 
+def init_listeners():
+    logger.info("init_listeners")
+    for event_name in events.listeners:
+        for priority in events.listeners[event_name]:
+            p=[]
+            for listener in events.listeners[event_name][priority]:
+                logger.debug("init listener:%s"%listener)
+                if inspect.isclass(listener):
+                    p.append(listener())
+                else:
+                    p.append(listener)
+            events.listeners[event_name][priority]=p
+
+
 def load_plugins():
     global plugins
     plugins=[]
     for plugin in get_plugins():
         logger.info('loading plugin "{plugin[name]}"'.format(plugin=plugin))
         plugins.append(load_plugin(plugin))
+    logger.info("plugins loaded")
+    init_listeners()
 
 def unload_plugins():
     global plugins

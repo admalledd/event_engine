@@ -29,14 +29,11 @@ def main():
         gametype code overrides code from normal play via the lazerserver calling (in order) gametype code, then default code (default normally only does heartbeats)
         gametype code inherits from abstract code from the entities.* overriding with its own functions
     '''
-    events.init()
-    entities.init()#starts network server
-    #suits and others should connect automatically. (maybe send UPD broadcast packet?)
-    ##TODO::: send broadcast packet saying server is up and running (if no error on entities.init())
-    
+    #load plugins first, they may add new events.
     lib.pluginloader.load_plugins()
-
-    logger.info(events.base.listeners)
+    entities.init()#starts network server
+    logger.info("event tree:%s"%events.base.events.keys())
+    logger.info("listener tree:%s"%events.base.listeners)
     while True:
         try:
 

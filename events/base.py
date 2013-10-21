@@ -29,47 +29,75 @@ def put(event):
 def get():
     return event_queue.get()
 
-def event_listener(name=None,priority=EVENT_NORMAL):
-    ''' Event listening decorator for all listeners so that we can set
-    up all the queue links and calling orders.
-    '''
-
-    if name==None:
-        raise TypeError("event name cannot be None")
-    if not isinstance(priority,int) or priority<0:
-        raise TypeError("priority must be a int=>0")
-    if name not in listeners:
-        listeners[name]={}
-        logger.warn('event "%s" not in cached event tree, might be ignored?'%name)
-    if priority not in listeners[name]:
-        listeners[name][priority]=list()
-
-    def fn(clazz):
-        obj=clazz()
-        listeners[name][priority].append(obj)
-        logger.debug('new listener on "%s" with priority "%s": "%s.%s()"'%(name,priority,clazz.__module__,clazz.__name__))
-        return obj
-
-    return fn
-
-class Event(type):
-    """Base event metaclass, root of the tree for all events.
-    injects the _sub_event so that we also act like a normal parent"""
+class _meta_Event_listener(type):
+    """Base listener class, subclasses must be decorated with
+    the __init__ cannot have arguments (@event_listener decorator inits for you, singleton) 
+    """
     def __new__(cls,class_name,bases,namespace):
-        bases= list(bases)
-        bases.append(_event_sub)
         #logger.debug((cls,class_name,bases,namespace))
+
+        #ignore the base class... it does not get added to the event tree...
+        if namespace['__module__'] == "events.base" and class_name == "Event_listener":
+            return type.__new__(cls,class_name,bases,namespace)
+
+        if 'etype' not in namespace:
+            raise TypeError("etype must be set")
+
+        if 'priority' not in namespace:
+            namespace['priority'] = EVENT_NORMAL
+        if not isinstance(namespace['priority'], int) or namespace['priority'] <0:
+            raise TypeError("priority must be int=>0")
+
+        if namespace['etype'] not in listeners:
+            listeners[namespace['etype']]={}
+            logger.warn('event "%s" not in cached event tree, might be ignored?'%namespace['etype'])
+        if namespace['priority'] not in listeners[namespace['etype']]:
+            listeners[namespace['etype']][namespace['priority']]=list()
+
+
+        cls = type.__new__(cls,class_name,bases,namespace)
+        #append only the class, not an instance. for some reason we kill python3 and pypy3 otherwise?
+        listeners[namespace['etype']][namespace['priority']].append(cls)
+
+        logger.debug('new listener on "%s" with priority "%s": "%s.%s()"'%(
+            namespace['etype'],
+            namespace['priority'],
+            namespace['__module__'],
+            class_name))
+        return cls
+
+class Event_listener(metaclass=_meta_Event_listener):
+    def run(self,event):
+        '''Default run for an event listener, should be overridden by subclasses'''
+        raise NotImplementedError()
+
+
+class _meta_event(type):
+    """Base event metaclass, root of the tree for all events."""
+    def __new__(cls,class_name,bases,namespace):
+        #logger.debug((cls,class_name,bases,namespace))
+        if class_name == "Event" and namespace['__module__'] == 'events.base':
+            return type.__new__(cls,class_name,bases,namespace)
         if class_name not in listeners:
             listeners[class_name]={}
         else:
             logger.warn('event "%s" already in cached listeners tree, duped event? or out-of order loading?'%class_name)
         if class_name in events:
-            logger.severe("ERROR: multiple events of the same name in event tree!")
+            logger.severe("multiple events of the same name in event tree! event '%s'"%class_name)
+            return
         else:
             events[class_name] = namespace['__module__']
-        return type.__new__(cls,class_name,bases,namespace)
+        cls=type.__new__(cls,class_name,bases,namespace)
+        logger.debug('event "%s" added to event tree from %s.%s'%(
+            class_name,
+            namespace['__module__'],
+            class_name)
+        )
+        events[class_name]=cls
+        return cls
 
-class _event_sub:
+
+class Event(metaclass=_meta_event):
     '''The true base class for events, here are all the default functions ect ect
     most will raise NotImplementedError
 
@@ -80,18 +108,4 @@ class _event_sub:
         d.update(self.__dict__)
         d.update(kwargs)
         self.__dict__=d
-            
-def init():
-    for event,mname in events.items():
-        mod = importlib.import_module(mname)
-        clazz = getattr(mod, event)
-        events[event] = clazz
-    logger.debug("Registered events:%s"%events.keys())
 
-class Event_listener:
-    """Base listener class, subclasses must be decorated with @event_listener to work
-    the __init__ cannot have arguments (@event_listener decorator inits for you, singleton) 
-    """
-    def run(self,event):
-        '''Default run for an event listener, should be overridden by subclasses'''
-        raise NotImplementedError() 

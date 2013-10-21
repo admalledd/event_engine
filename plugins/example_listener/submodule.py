@@ -1,15 +1,19 @@
 import logging
 logger=logging.getLogger('plugins.example_listener.submodule')
 
-from events.base import Event_listener,event_listener
+from events.base import Event_listener,Event
 import entities
 
 def unload():
     logger.debug("unloading...")
 
-@event_listener("got_hit_event")
+class got_hit_event(Event):
+    pass
+
+
 class got_hit_listener(Event_listener):
     """docstring for got_hit_listener"""
+    etype="got_hit_event"
     def __init__(self):
         super().__init__()
         logger.info("got_hit_listener init")
@@ -17,9 +21,9 @@ class got_hit_listener(Event_listener):
         logger.info("got_hit_listener called")
 
 
-@event_listener("ping_event")
 class ping_listener(Event_listener):
     """docstring for ping_listener"""
+    etype="ping_event"
     def __init__(self):
         super().__init__()
         logger.info("ping_listener init")
