@@ -32,16 +32,13 @@ def main():
     #load plugins first, they may add new events.
     lib.pluginloader.load_plugins()
     entities.init()#starts network server
-    logger.info("event tree:%s"%events.base.events.keys())
+    logger.info("event tree:%s"%events.base.events)
     logger.info("listener tree:%s"%events.base.listeners)
     while True:
         try:
 
             event = events.base.get()
-            priorities=events.listeners[event.name].keys()
-            for priority in sorted(priorities):
-                for listener in events.listeners[event.name][priority]:
-                    listener.run(event)
+            events.handle_event(event)
         except KeyboardInterrupt:
             logger.info("server quit requested!")
             lib.pluginloader.unload_plugins()

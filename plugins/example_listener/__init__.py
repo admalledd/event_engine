@@ -7,6 +7,11 @@ from . import submodule
 
 def unload():
     logger.debug("unloading...")
+def onload():
+    '''only __init__.py of the plugin gets onload() called,
+     its up to the plugin to recurse to submodules'''
+    logger.debug("loading...")
+    submodule.onload()
 
 class listen_tester(Event_listener):
     """docstring for listen_tester"""

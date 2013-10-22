@@ -29,6 +29,15 @@ def put(event):
 def get():
     return event_queue.get()
 
+def handle_event(event):
+    '''passes events to listeners, does NOT catch exceptions!'''
+    priorities=listeners[event.name].keys()
+    for priority in sorted(priorities):
+        for listener in listeners[event.name][priority]:
+            listener.run(event)
+            if event.cancelled: 
+                return #bail out if cancelled!
+
 class _meta_Event_listener(type):
     """Base listener class, subclasses must be decorated with
     the __init__ cannot have arguments (@event_listener decorator inits for you, singleton) 
@@ -103,6 +112,7 @@ class Event(metaclass=_meta_event):
 
     '''
     def __init__(self,kwargs):
+        self.cancelled=False
         self.kwargs=kwargs
         d={}
         d.update(self.__dict__)

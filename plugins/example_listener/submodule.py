@@ -6,7 +6,8 @@ import entities
 
 def unload():
     logger.debug("unloading...")
-
+def onload():
+    logger.debug('loading...')
 class got_hit_event(Event):
     pass
 
