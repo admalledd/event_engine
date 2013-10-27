@@ -20,5 +20,5 @@ class listen_tester(Event_listener):
         super().__init__()
         logger.info("listen_tester init")
     def run(self,event):
-        logger.info("listen_tester called")
+        logger.info("Connection from %s opened"%event.id)
 

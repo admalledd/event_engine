@@ -187,12 +187,14 @@ class con_handler(socketserver.BaseRequestHandler):
         format of outgoing data: tuple(action,jsonabledata)'''
         while self.run_handler:
             try:
-                short_func,data=self.outgoingq.get(5)
+                short_func,data=self.outgoingq.get(timeout=1)
             except:
+                logger.debug("writer outgoingq timeout")
                 continue
             packet=self.make_packet(short_func,data)
             ##todo::: add to stack for reliability the logging of all data out
             self.request.sendall(packet)
+        logger.debug("writer thread closed")
     def finnish(self):
         logger.warn('OBJECT %s requested connection closed.'%self.OID)
         

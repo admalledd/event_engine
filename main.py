@@ -2,6 +2,7 @@ import logging
 logger=logging.getLogger('main')
 import traceback
 import sys
+import pprint
 
 import lib.cfg
 import lib.common
@@ -15,7 +16,6 @@ import entities
 
 import events
 
-#import ipdb;ipdb.set_trace()
 
 def main():
     '''
@@ -32,8 +32,8 @@ def main():
     #load plugins first, they may add new events.
     lib.pluginloader.load_plugins()
     entities.init()#starts network server
-    logger.info("event tree:%s"%events.base.events)
-    logger.info("listener tree:%s"%events.base.listeners)
+    logger.info("event tree:%s"%pprint.pformat(events.base.events))
+    logger.info("listener tree:%s"%pprint.pformat(events.base.listeners))
     while True:
         try:
 
