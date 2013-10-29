@@ -9,10 +9,7 @@ general game server for a few different projects.
 --------
 
 * event listening system
-    * main event queue (Thread safe INPUT)
-    * Event loop that pulls one event and fires it through all listeners for that event
-    * example put::: `events.put(events.base.Event())`
-    * class decorator for event name / priority
+    * better firing of events? hrm...
 
 * plugin/game loading
-    * support loading from specific folder from pyfs (to support remote file loading?)
+    * support serving of "remote" files for client game code/client plugins
