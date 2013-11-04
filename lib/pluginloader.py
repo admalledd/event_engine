@@ -11,8 +11,6 @@ import fs.osfs
 
 import lib.common
 
-import events
-
 LocalPlugins = fs.osfs.OSFS(os.path.join(lib.common.curdir,"plugins"))
 RemotePlugins = fs.osfs.OSFS(os.path.join(lib.common.curdir,"remote"))
 MainModule = "__init__"
@@ -38,6 +36,7 @@ def load_plugin(plugin):
     return pl
 
 def init_listeners():
+    import events#moved to make sure imports happen at the correct time :/
     logger.info("init_listeners")
     for event_name in events.listeners:
         for priority in events.listeners[event_name]:
@@ -127,5 +126,5 @@ class remLoader:
         newmod.__path__=['rempy://'+fullname] #this is what lets python.importlib know that we can do other imports...
         exec(code,newmod.__dict__)
         return newmod
-
+logger.info("injecting to sys.meta_path the remote importer!")
 sys.meta_path.append(remImporter(RemotePlugins))

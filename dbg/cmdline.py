@@ -1,7 +1,7 @@
 
 import time
 
-from net import con
+from client.net import connection
 
 ent=con(127, "s")
 

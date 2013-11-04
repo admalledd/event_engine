@@ -6,7 +6,7 @@ import pprint
 
 import lib.cfg
 import lib.common
-lib.common.init()
+lib.common.init() #init as soon as possible, so that logging is set up for others.
 #set debug here so that all later imports can use import-time redefines
 lib.common.debug(5)
 import lib.pluginloader

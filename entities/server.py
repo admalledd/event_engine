@@ -176,7 +176,7 @@ class con_handler(socketserver.BaseRequestHandler):
                 if from server: action name for suit to do (eg, 'chst'==changestats)
                     here data would be something like: {'health':('-',5)} #loose five health
         '''
-        if len(action) !=4:
+        if len(action.encode('ascii')) !=4:
             raise Exception('action must be 4 chars.')
         data = json.dumps(data,skipkeys=True,default=lambda o:str(o))
         header=struct.pack('I',len(data))+action.encode('ascii')
