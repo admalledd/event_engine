@@ -135,6 +135,16 @@ def init(LOGFILENAME=None):
 
     # tell the handler to use this format
     console.setFormatter(formatter)
+    print(lib.cfg.main['log_settings']['ignore_list'].split('|'))
+    class BlackListFilter(logging.Filter):
+        def filter(self,record):
+            if record.name.split(".")[0] in lib.cfg.main['log_settings']['ignore_list'].split('|'):
+                return False
+            else:
+                return True
+
+    console.addFilter(BlackListFilter())
+
     # add the handler to the root logger
     logging.getLogger('').addHandler(console)
     

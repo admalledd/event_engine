@@ -68,6 +68,8 @@ def unload_plugins():
             if hasattr(p,"unload"):
                 p.unload()
         except Exception as e:
+            #even if a plugin fails unloading we must continue. although if this is for a reload, not a shut down
+            # then we can safely say that the server is now in a undetermined state.
             logger.critical("plugin '%s' failed unloading:%s"%(plugin,traceback.format_exc()))
         del sys.modules[plugin]
 
