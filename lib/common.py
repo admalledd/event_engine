@@ -32,28 +32,13 @@ def p_rents(lo):
     buf=[]
     for i in reversed(inspect.stack()[1:-1]):
         tmp=[]
-        ##first, the path of the script
-        if i[1].startswith(curdir):
-            filename = i[1][len(curdir)+1:]
-        else:
-            filename=i[1]
-        ##add line number
-        lineno = str(i[2])
         ##add class ??? (also, check if it IS a class that we need info from)
-        if 'self' in i[0].f_locals:
-            cls = str(type(i[0].f_locals['self']))[8:-2]
-            cls = str(cls.split('.')[1:])[2:-2]
-        else:
-            cls = ''
-            
-        ##add function of class/file
-        func = i[3]
+        if 'self' in i[0].f_locals: cls = str(type(i[0].f_locals['self']))[8:-2].split('.')[1:][2:-2]
+        else: cls = ''
+        buf.append("%s:%s:%s:%s()"%(i[1],i[2],cls,i[3]))
         
-        buf.append("%s:%s:%s:%s()"%(filename,lineno,cls,func))
-        
-    path=" >> ".join(buf)
     ##finaly, use logging instance to log this thing for us, saving it to file, printing to terminal and whatnot
-    lo.debug('call stack: %s'%path)
+    lo.debug('call stack: %s'%" >> ".join(buf))
 
 def print_thread_stacks():
     import traceback,sys

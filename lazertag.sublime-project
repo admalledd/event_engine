@@ -11,7 +11,7 @@
         "name":"build_project",
         "linux":
         {
-            "cmd": ["gnome-terminal","-x",
+            "cmd": ["xfce4-terminal","-x",
                     "${packages}/User/run_linux_program_sub",
                     "${project_path}",
                     "/home/admalledd/bin/pypy3",
